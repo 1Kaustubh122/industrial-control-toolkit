@@ -74,7 +74,7 @@ class RootLocus:
         s = complex(s)
         angle = sum(np.angle(s - z, deg=True) for z in self.zeros)
         angle -= sum(np.angle(s - p, deg=True) for p in self.poles)
-        angles %= 360
+        angle %= 360
         return abs(angle - 180) <= tolerance or abs(angle - 540) <= tolerance
     
     def scan_complex_plane(self, xlimit=(-10, 10), ylimit=(-10, 10), resol=500):
