@@ -7,8 +7,8 @@ class RootLocus:
         self.poles = poles
         self.zeros = zeros
         self.n = len(self.poles) 
-        self.m = len(zeros)
-        # self.asymptotes = len(poles) - 
+        self.m = len(self.zeros)
+        # self.asymptotes = len(poles) - len(zeros)
     
     def calc_asympote_centroid(self):
         return (sum(self.poles) - sum(self.zeros)) / (self.n - self.m)
@@ -26,10 +26,10 @@ class RootLocus:
         
         count = 0
         for p in self.poles:
-            if np.isreal(p) and p.real > point:
+            if np.isreal(p) and p.real > point.real:
                 count += 1
         for z in self.zeros:
-            if np.isreal(z) and z.real > point:
+            if np.isreal(z) and z.real > point.real:
                 count += 1
                 
         return count % 2 == 1
@@ -66,6 +66,26 @@ class RootLocus:
     
     def angle_of_departure(self, pole):
         other_poles = [p for p in self.poles if p != pole]
-        sum_pole_angles = sum(np.angle(pole - p) for p in other_poles)
-        sum_zero_angles = sum(np.angle(pole - z) for z in self.zeros)
+        sum_pole_angles = sum(np.angle(pole - p, deg=True) for p in other_poles)
+        sum_zero_angles = sum(np.angle(pole - z, deg=True) for z in self.zeros)
         return 180 - (sum_pole_angles - sum_zero_angles)
+    
+    def satisfies_angle_conditions(self, s, tolerance=5):
+        s = complex(s)
+        angle = sum(np.angle(s - z, deg=True) for z in self.zeros)
+        angle -= sum(np.angle(s - p, deg=True) for p in self.poles)
+        angles %= 360
+        return abs(angle - 180) <= tolerance or abs(angle - 540) <= tolerance
+    
+    def scan_complex_plane(self, xlimit=(-10, 10), ylimit=(-10, 10), resol=500):
+        real_vals = np.linspace(xlimit[0], xlimit[1], resol)
+        imag_vals = np.linspace(ylimit[0], ylimit[1], resol)
+        locus_points = []
+
+        for i in real_vals:
+            for k in imag_vals:
+                s = complex(i, k)
+                if self.satisfies_angle_conditions(s, tolerance=5):
+                    locus_points.append(s)
+
+        return locus_points
