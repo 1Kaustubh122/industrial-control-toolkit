@@ -1,10 +1,10 @@
 <sdf version="1.8">
-  <model name="saye">
+  <model name="vehicle">
     <self_collide>false</self_collide>
     <static>false</static>
     
     <link name="base_link">
-      <gz_frame_id>saye/base_link</gz_frame_id>
+      <gz_frame_id>vehicle/base_link</gz_frame_id>
       <inertial>
         <pose >0 0 0 0 0 0</pose>
         <mass>3.0</mass>
@@ -21,20 +21,20 @@
         <pose>.1371 0 -.0115 -0.018 0 1.5707</pose>
         <geometry>
           <mesh>
-           <uri >package://saye_description/models/saye/meshes/BaseReduced.dae</uri>
+           <uri >package://vehicle_description/models/vehicle/meshes/BaseReduced.dae</uri>
           </mesh>
         </geometry>
       </visual>
-      <visual name="saye/TopVisual">
+      <visual name="vehicle/TopVisual">
         <pose>.1371 0 -.0115 -0.018 0 1.5707</pose>
         <geometry>
           <mesh>
           /meshes/BaseReduced.dae
-           <uri >package://saye_description/models/saye/meshes/TopReduced.dae</uri>
+           <uri >package://vehicle_description/models/vehicle/meshes/TopReduced.dae</uri>
           </mesh>
         </geometry>
       </visual>
-      <collision name="saye/BaseCollision">
+      <collision name="vehicle/BaseCollision">
         <pose>0 0 .06 0 0 0</pose>
         <geometry>
           <box>
@@ -58,15 +58,15 @@
           <izz>0.000000000001</izz>
         </inertia>
       </inertial>
-      <visual name="saye/visual_lidar">
+      <visual name="vehicle/visual_lidar">
         <pose>0 0 -.028 0 0 0</pose>
         <geometry>
           <mesh>
-           <uri >package://saye_description/models/saye/meshes/STL27L.dae</uri>
+           <uri >package://vehicle_description/models/vehicle/meshes/STL27L.dae</uri>
           </mesh>
         </geometry>
       </visual>
-      <visual name="saye/camera_rack">
+      <visual name="vehicle/camera_rack">
         <pose>-0.05 0 0.05 0 0 0</pose>
         <geometry>
           <box>
@@ -78,7 +78,7 @@
       <sensor name="imu_sensor" type="imu">
         <always_on>1</always_on>
         <update_rate>50</update_rate>
-        <!-- <gz_frame_id>saye/sensor_link</gz_frame_id> -->
+        <!-- <gz_frame_id>vehicle/sensor_link</gz_frame_id> -->
         <topic>imu</topic>
         <imu>
           <enable_orientation>0</enable_orientation>
@@ -157,7 +157,7 @@
       <sensor name="navsat_sensor" type="navsat">
         <always_on>1</always_on>
         <update_rate>10</update_rate>
-        <!-- <gz_frame_id>saye/sensor_link</gz_frame_id> -->
+        <!-- <gz_frame_id>vehicle/sensor_link</gz_frame_id> -->
         <topic>navsat</topic>
         <navsat>
           <position_sensing></position_sensing>
@@ -192,7 +192,7 @@
             <stddev>0.01</stddev>
           </noise>
         </lidar>
-        <gz_frame_id>saye/sensor_link</gz_frame_id>
+        <gz_frame_id>vehicle/sensor_link</gz_frame_id>
         <topic>scan</topic>
         <visualize>true</visualize>
         <update_rate>10</update_rate>
@@ -245,7 +245,7 @@
             <stddev>0.007</stddev>
           </noise>
         </camera>
-        <!-- <gz_frame_id>saye/sensor_link</gz_frame_id> -->
+        <!-- <gz_frame_id>vehicle/sensor_link</gz_frame_id> -->
         <topic>rs_front</topic>
         <visualize>true</visualize>
       </sensor>
@@ -292,7 +292,7 @@
              <stddev>0.007</stddev>
            </noise>
          </camera>
-        <!-- <gz_frame_id>saye/sensor_link</gz_frame_id> -->
+        <!-- <gz_frame_id>vehicle/sensor_link</gz_frame_id> -->
         <topic>camera_front</topic>
         <visualize>true</visualize>
        </sensor>
@@ -338,7 +338,7 @@
              <stddev>0.007</stddev>
            </noise>
          </camera>
-         <!-- <gz_frame_id>saye/sensor_link</gz_frame_id> -->
+         <!-- <gz_frame_id>vehicle/sensor_link</gz_frame_id> -->
          <topic>camera_rear</topic>
          <visualize>true</visualize>
        </sensor>
@@ -347,7 +347,7 @@
          <pose>0.085 0.09 0.27 0 0 1.5707963267948966</pose>
          <always_on>1</always_on>
          <update_rate>10</update_rate>
-        <!-- <gz_frame_id>saye/sensor_link</gz_frame_id> -->
+        <!-- <gz_frame_id>vehicle/sensor_link</gz_frame_id> -->
          <camera name="camera_left">
            <horizontal_fov>1.658</horizontal_fov>
            <lens>
@@ -385,7 +385,7 @@
              <stddev>0.007</stddev>
            </noise>
          </camera>
-         <!-- <gz_frame_id>saye/sensor_link</gz_frame_id> -->
+         <!-- <gz_frame_id>vehicle/sensor_link</gz_frame_id> -->
          <topic>camera_left</topic>
          <visualize>true</visualize>
        </sensor>
@@ -394,7 +394,7 @@
          <pose>0.085 -0.09 0.27 0 0 -1.5707963267948966</pose>
          <always_on>1</always_on>
          <update_rate>10</update_rate>
-         <!-- <gz_frame_id>saye/sensor_link</gz_frame_id> -->
+         <!-- <gz_frame_id>vehicle/sensor_link</gz_frame_id> -->
          <camera name="camera_right">
            <horizontal_fov>1.658</horizontal_fov>
            <lens>
@@ -432,7 +432,7 @@
              <stddev>0.007</stddev>
            </noise>
          </camera>
-         <!-- <gz_frame_id>saye/sensor_link</gz_frame_id> -->
+         <!-- <gz_frame_id>vehicle/sensor_link</gz_frame_id> -->
          <topic>camera_right</topic>
          <visualize>true</visualize>
        </sensor>
@@ -466,15 +466,15 @@
       </inertial>
       <gravity>true</gravity>
       <velocity_decay/>
-      <visual name="saye/FrontLeftWheelVisual">
+      <visual name="vehicle/FrontLeftWheelVisual">
         <pose>0 0 0 0 0 3.14159</pose>
         <geometry>
           <mesh>
-           <uri >package://saye_description/models/saye/meshes/Wheel.dae</uri>
+           <uri >package://vehicle_description/models/vehicle/meshes/Wheel.dae</uri>
           </mesh>
         </geometry>
       </visual>
-      <collision name="saye/FrontLeftWheelCollision">
+      <collision name="vehicle/FrontLeftWheelCollision">
         <pose>0 -.015 0 -1.5707 0 0</pose>
         <geometry>
           <cylinder>
@@ -553,15 +553,15 @@
       </inertial>
       <gravity>true</gravity>
       <velocity_decay/>
-      <visual name="saye/FrontRightWheelVisual">
+      <visual name="vehicle/FrontRightWheelVisual">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-           <uri>package://saye_description/models/saye/meshes/Wheel.dae</uri>
+           <uri>package://vehicle_description/models/vehicle/meshes/Wheel.dae</uri>
           </mesh>
         </geometry>
       </visual>
-      <collision name="saye/FrontRightWheelCollision">
+      <collision name="vehicle/FrontRightWheelCollision">
         <pose>0 .015 0 -1.5707 0 0</pose>
         <geometry>
           <cylinder>
@@ -678,7 +678,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-           <uri >package://saye_description/models/saye/meshes/Wheel.dae</uri>
+           <uri >package://vehicle_description/models/vehicle/meshes/Wheel.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -720,7 +720,7 @@
         <pose>0 0 0 0 0 3.14159</pose>
         <geometry>
           <mesh>
-           <uri >package://saye_description/models/saye/meshes/Wheel.dae</uri>
+           <uri >package://vehicle_description/models/vehicle/meshes/Wheel.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -774,7 +774,7 @@
 
     <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
       <odom_frame>odom</odom_frame>
-      <robot_base_frame>saye</robot_base_frame>
+      <robot_base_frame>vehicle</robot_base_frame>
       <odom_topic>odom</odom_topic> 
       <dimensions>3</dimensions>
     </plugin>
