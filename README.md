@@ -1,4 +1,4 @@
-# Industrial Control Toolkit (ICTK)
+# Industrial Control Toolkit (ICTK)  *Under Development: Shipping by End August*
 
 **A portable, deterministic, production-grade control library for real-world automation.**
 
@@ -75,7 +75,7 @@ See [`docs/Architecture.md`](docs/Architecture.md) for the full module layout an
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Apache — see [LICENSE](LICENSE).
 
 
 ## Status
