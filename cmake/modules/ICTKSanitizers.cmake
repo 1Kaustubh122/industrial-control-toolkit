@@ -1,5 +1,5 @@
 ## Applying sanitizers
-function(ictk_apply_sanitizers tgt)
+function(ictk_apply_sanitizers tgt)  
     ## Sanitizers only for debug builds not for release builds
     if (NOT CMAKE_BUILD_TYPE MATCHES "Debug")
         return()

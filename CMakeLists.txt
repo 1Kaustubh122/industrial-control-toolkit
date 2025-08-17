@@ -29,10 +29,17 @@ include(ICTKSanitizers)
 add_library(ictk_core INTERFACE)
 target_include_directories(ictk_core INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 ictk_apply_compiler_options(ictk_core)
-ictk_apply_sanitizer_options(ictk_core)
+ictk_apply_sanitizers(ictk_core)
 
 
-enable_testing()
+## TESTING
+if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  include(CTest)
+  if (BUILD_TESTING)
+    add_subdirectory(tests)
+  endif() 
+endif()
 
+## Install
 install(TARGETS ictk_core EXPORT ICTKTargets)
 install(EXPORT ICTKTargets NAMESPACE ictk:: DESTINATION lib/cmake/ictk)
