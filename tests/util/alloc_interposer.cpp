@@ -11,7 +11,7 @@
 
 namespace ictk_test{
 
-    // // atomic avoid race conditions
+    // // atomic avoid race conditions | Global counter g_* -> tracks how many allocations happens 
     static std::atomic<std::uint64_t> g_news{0}, g_deletes{0}, g_new_aligned{0}, g_delete_aligned{0};
 
     // // counters -> returns a const refernce to a function local static AllocStats s
