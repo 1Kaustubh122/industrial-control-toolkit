@@ -25,6 +25,114 @@ namespace ictk_test{
         return s;
     }
 
+    // // Resetting global counter to 0, 
+    void reset_alloc_stats(){
+        g_news.store(0, std::memory_order_relaxed);
+        g_deletes.store(0, std::memory_order_relaxed);
+        g_new_aligned.store(0, std::memory_order_relaxed);
+        g_delete_aligned.store(0, std::memory_order_relaxed);
+    }
+
 } // namespace ictk_test
 
 
+// // Global operator new and delete override 
+void * operator new(std::size_t sz){
+    ictk_test::g_news.fetch_add(1, std::memory_order_relaxed);
+    if (void* p = std::malloc(sz)){
+        return p;
+    }
+    throw std::bad_alloc();
+}
+
+void* operator new[](std::size_t sz){
+    ictk_test::g_news.fetch_add(1, std::memory_order_relaxed);
+    if (void* p = std::malloc(sz)){
+        return p;
+    }
+    throw std::bad_alloc();
+}
+
+void operator delete(void* p) noexcept{
+    ictk_test::g_deletes.fetch_add(1, std::memory_order_relaxed);
+    std::free(p);
+}
+
+void operator delete[](void* p) noexcept{
+    ictk_test::g_deletes.fetch_add(1, std::memory_order_relaxed);
+    std::free(p);
+}
+
+void operator delete(void* p, std::size_t) noexcept{
+    ictk_test::g_deletes.fetch_add(1, std::memory_order_relaxed);
+    std::free(p);
+}
+
+void operator delete[](void* p, std::size_t) noexcept{
+    ictk_test::g_deletes.fetch_add(1, std::memory_order_relaxed);
+    std::free(p);
+}
+
+void* operator new(std::size_t sz, std::align_val_t al){
+    ictk_test::g_new_aligned.fetch_add(1, std::memory_order_relaxed);
+    std::size_t align = static_cast<std::size_t>(al);
+#if defined(_WIN32)
+    void* p = _aligned_malloc(sz, align);
+    if (!p){
+        throw std::bac_alloc();
+    }
+    return p;
+#else
+    void* p = nullptr;
+    if (posix_memalign(&p, align, sz) != 0 || !p) throw std::bad_alloc();
+    return p;
+#endif
+}
+
+void operator delete(void* p, std::align_val_t) noexcept{
+    ictk_test::g_delete_aligned.fetch_add(1, std::memory_order_relaxed);
+#if defined(_WIN32)
+    _aligned_free(p);
+#else
+    std::free(p);
+#endif
+}
+
+void* operator new[](std::size_t sz, std::align_val_t al){
+    return ::operator new(sz, al);
+}
+
+void operator delete[](void* p, std::align_val_t al) noexcept{
+    return ::operator delete(p, al);
+}
+
+void operator delete(void* p, std::size_t, std::align_val_t) noexcept{
+    ictk_test::g_delete_aligned.fetch_add(1, std::memory_order_relaxed);
+#if defined(_WIN32)
+    _aligned_free(p);
+#else
+    std::free(p);
+#endif
+}
+
+void operator delete[](void* p, std::size_t, std::align_val_t al) noexcept{
+    return ::operator delete(p, al);
+}
+
+void* operator new(std::size_t sz, const std::nothrow_t&) noexcept{
+    ictk_test::g_news.fetch_add(1, std::memory_order_relaxed);
+    return std::malloc(sz);
+}
+
+void operator delete(void* p, const std::nothrow_t&) noexcept{
+  ictk_test::g_deletes.fetch_add(1, std::memory_order_relaxed);
+  std::free(p);
+}
+void* operator new[](std::size_t sz, const std::nothrow_t&) noexcept {
+  ictk_test::g_news.fetch_add(1, std::memory_order_relaxed);
+  return std::malloc(sz);
+}
+void operator delete[](void* p, const std::nothrow_t&) noexcept{
+  ictk_test::g_deletes.fetch_add(1, std::memory_order_relaxed);
+  std::free(p);
+}
