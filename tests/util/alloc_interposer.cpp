@@ -9,6 +9,18 @@
 #endif
 
 
+static inline void* ictk_fail_alloc() noexcept{
+    #if defined(ICTK_NO_EXCEPTIONS)
+        std::abort();
+    # if defined(__GNUC__) || defined(__clang__)
+        __builtin_unreachable();
+    # endif
+        return nullptr; 
+    #else
+        return ictk_fail_alloc();
+    #endif
+}
+
 namespace ictk_test{
 
     // // atomic avoid race conditions | Global counter g_* -> tracks how many allocations happens 
@@ -51,7 +63,7 @@ void * operator new(std::size_t sz){
     if (void* p = std::malloc(sz)){
         return p;
     }
-    throw std::bad_alloc();
+    return ictk_fail_alloc();
 }
 
 void* operator new[](std::size_t sz){
@@ -59,7 +71,7 @@ void* operator new[](std::size_t sz){
     if (void* p = std::malloc(sz)){
         return p;
     }
-    throw std::bad_alloc();
+    return ictk_fail_alloc();
 }
 
 void operator delete(void* p) noexcept{
@@ -90,12 +102,12 @@ void* operator new(std::size_t sz, std::align_val_t al){
 #if defined(_WIN32)
     void* p = _aligned_malloc(sz, align);
     if (!p){
-        throw std::bad_alloc();
+        return ictk_fail_alloc();
     }
     return p;
 #else
     void* p = nullptr;
-    if (posix_memalign(&p, align, sz) != 0 || !p) throw std::bad_alloc();
+    if (posix_memalign(&p, align, sz) != 0 || !p) return ictk_fail_alloc();
     return p;
 #endif
 }
