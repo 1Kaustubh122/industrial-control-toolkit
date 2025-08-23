@@ -70,7 +70,7 @@ static std::vector<std::uint8_t> run_once(std::size_t N, Dims dims, dt_ns dt){
 
     // // no alloc allwed during update ticks
     assert(new1 == new0);
-    assert(new1 == newA0);
+    assert(newA1 == newA0);
 
     return bytes;
 
