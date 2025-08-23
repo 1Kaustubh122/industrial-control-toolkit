@@ -1,10 +1,10 @@
-#include "unit/alloc_interposer.hpp"
+#include "util/alloc_interposer.hpp"
 #include <atomic>
-#include <cstdlib>
-#include <new>
-#include <cstddef>
+#include <cstdlib>   // for malloc and free
+#include <new>       // for operator new and delete 
+#include <cstddef>   // for unsigned int type
 
-#if defined(_WIN32)
+#if defined(_WIN32)     // only for windows system
     #include <malloc.h>
 #endif
 
@@ -13,6 +13,15 @@ namespace ictk_test{
 
     // // atomic avoid race conditions | Global counter g_* -> tracks how many allocations happens 
     static std::atomic<std::uint64_t> g_news{0}, g_deletes{0}, g_new_aligned{0}, g_delete_aligned{0};
+    /*  
+        "No heap after start() for determinism and WCET"
+        g -> global
+        g_news = count all normal allocations -> operator new and operator new[]
+        g_deletes = count all normal frees -> operator delete and operator delete[]
+        g_new_aligned = count all normal allocations -> operator new(size t, std::align_val_t) and array form
+        g_deletes_aligned = count all normal frees -> matching aligned news
+
+     */
 
     // // counters -> returns a const refernce to a function local static AllocStats s
     const AllocStats& alloc_stats(){
@@ -63,6 +72,8 @@ void operator delete[](void* p) noexcept{
     std::free(p);
 }
 
+
+// // Sized deleteds -> covers (GCC, Clang, MSVC variants)
 void operator delete(void* p, std::size_t) noexcept{
     ictk_test::g_deletes.fetch_add(1, std::memory_order_relaxed);
     std::free(p);
@@ -79,7 +90,7 @@ void* operator new(std::size_t sz, std::align_val_t al){
 #if defined(_WIN32)
     void* p = _aligned_malloc(sz, align);
     if (!p){
-        throw std::bac_alloc();
+        throw std::bad_alloc();
     }
     return p;
 #else
@@ -119,6 +130,7 @@ void operator delete[](void* p, std::size_t, std::align_val_t al) noexcept{
     return ::operator delete(p, al);
 }
 
+// // nothrow net and deltes
 void* operator new(std::size_t sz, const std::nothrow_t&) noexcept{
     ictk_test::g_news.fetch_add(1, std::memory_order_relaxed);
     return std::malloc(sz);
