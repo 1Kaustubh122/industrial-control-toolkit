@@ -27,7 +27,12 @@ include(ICTKCompilerOptions)
 include(ICTKSanitizers)
 
 add_library(ictk_core INTERFACE)
-target_include_directories(ictk_core INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
+target_include_directories(ictk_core INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
 ictk_apply_compiler_options(ictk_core)
 ictk_apply_sanitizers(ictk_core)
 
