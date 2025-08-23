@@ -16,7 +16,7 @@ namespace ictk{
         t_ns t;
 
         // default: all channels valid
-        std::uint64_t valid_bits{~0ull}
+        std::uint64_t valid_bits{~0ull};
     };
 
     struct Setpoint{
