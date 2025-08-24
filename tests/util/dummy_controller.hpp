@@ -64,8 +64,8 @@ namespace ictk_test{
 
                 (void)ctx; // // unused -> prevents warning 
 
-                if (hooks_.post_arbitarte){
-                    hooks_.post_arbitarte(out.u, out.u, hooks_.user);
+                if (hooks_.post_arbitrate){
+                    hooks_.post_arbitrate(out.u, out.u, hooks_.user);
                 }
 
                 // // not checking health, just bumping the internal counter to ensure runtime path is working
