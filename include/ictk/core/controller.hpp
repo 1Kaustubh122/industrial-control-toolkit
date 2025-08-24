@@ -20,7 +20,7 @@ namespace ictk{
     // //  Optional callbacks: Default No callback, optional, no state attached
     struct Hooks{
         PreClampHook pre_clamp{nullptr};
-        PostArbHook post_arbitarte{nullptr};
+        PostArbHook post_arbitrate{nullptr};
         void* user{nullptr};
     };
 
