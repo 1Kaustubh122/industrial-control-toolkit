@@ -26,7 +26,7 @@ namespace ictk{
                 const std::size_t head = static_cast<std::size_t>(aligned - base);
 
                 // // overflow -safe capacity check: head + bytes <= cap
-                if (head > cap_ || bytes > cap_ - head) return nullptr;
+                if (head > cap_ || bytes > cap_ - head) return nullptr;  // nullptr returned cause RT can't throw
 
                 offset_ = head + bytes;
 
