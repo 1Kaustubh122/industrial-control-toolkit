@@ -4,7 +4,7 @@
 #include "ictk/core/time.hpp"
 
 namespace ictk::safety {
-
+    // // Deadline watch dog (tick-driven) -> counts misses and trips after threshold
     class Watchdog {
         public:
             Watchdog(dt_ns dt_expected, std::uint32_t miss_threshold, dt_ns slack = 0) noexcept
