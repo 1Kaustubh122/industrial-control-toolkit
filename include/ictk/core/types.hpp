@@ -1,14 +1,21 @@
 #pragma once
 #include <cstddef>
+#include <type_traits>
 
-// // Choose Command mode across 4 different types
 namespace ictk{
-    using Scalar = double;
-
+    #if defined(ICTK_SCALAR_FLOAT)
+        // // float for embedded/aarch64 tests
+        using Scalar = float;
+    #else
+        using Scalar = double;
+        static_assert(!std::is_same_v<Scalar, float>, "use double by default");
+    #endif
+    
     struct Dims{
-        std:: size_t ny{}, nu{}, nx{};
+        std::size_t ny{}, nu{}, nx{};
     };
-
+    
+    // // Choose Command mode across 4 different types
     enum class CommandMode : unsigned char {
         Primary=0,
         Residual=1,
