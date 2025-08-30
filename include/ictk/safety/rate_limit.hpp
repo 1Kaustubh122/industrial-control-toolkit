@@ -97,6 +97,10 @@ namespace ictk::safety{
                 return last_mag_;
             }
 
+            bool valid() const noexcept{
+                return prev_ != nullptr;
+            }
+
         private:
             std::span <const Scalar> rmax_{};
             dt_ns dt_{0};

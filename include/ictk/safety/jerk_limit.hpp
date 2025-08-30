@@ -128,7 +128,7 @@ namespace ictk::safety{
 
             // // helper functions
             bool valid() const noexcept{ 
-                return prev_ && dprev_;
+                return prev_ != nullptr && dprev_ != nullptr;
             }
             Scalar last_clip_mag() const noexcept{
                 return last_mag_; 
