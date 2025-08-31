@@ -64,3 +64,40 @@ add_executable(test_fallback_ramp property/test_fallback_ramp.cpp)
 target_link_libraries(test_fallback_ramp PRIVATE ictk_core)
 ictk_apply_compiler_options(test_fallback_ramp)
 add_test(NAME safety_fallback_ramp COMMAND test_fallback_ramp)
+
+
+add_executable(test_pid_coeffs tests_pid/unit/pid_coeffs_test.cpp)
+target_link_libraries(test_pid_coeffs PRIVATE ictk_core)
+ictk_apply_compiler_options(test_pid_coeffs)
+add_test(NAME pid_coeffs_test COMMAND test_pid_coeffs)
+
+add_executable(test_pid_aw_modes tests_pid/unit/pid_aw_modes_test.cpp)
+target_link_libraries(test_pid_aw_modes PRIVATE ictk_core)
+ictk_apply_compiler_options(test_pid_aw_modes)
+add_test(NAME pid_aw_modes_test COMMAND test_pid_aw_modes)
+
+add_executable(test_pid_invalid_bits tests_pid/unit/pid_invalid_bits_test.cpp)
+target_link_libraries(test_pid_invalid_bits PRIVATE ictk_core)
+ictk_apply_compiler_options(test_pid_invalid_bits)
+add_test(NAME pid_invalid_bits_test COMMAND test_pid_invalid_bits)
+
+
+add_executable(test_pid_bumpless tests_pid/property/pid_bumpless_property.cpp)
+target_link_libraries(test_pid_bumpless PRIVATE ictk_core)
+ictk_apply_compiler_options(test_pid_bumpless)
+add_test(NAME pid_bumpless_property COMMAND test_pid_bumpless)
+
+add_executable(test_pid_sched_lipschitz tests_pid/property/pid_scheduling_lipschitz.cpp)
+target_link_libraries(test_pid_sched_lipschitz PRIVATE ictk_core)
+ictk_apply_compiler_options(test_pid_sched_lipschitz)
+add_test(NAME pid_scheduling_lipschitz COMMAND test_pid_sched_lipschitz)
+
+add_executable(test_pid_aw_post_safety tests_pid/property/pid_aw_post_safety.cpp)
+target_link_libraries(test_pid_aw_post_safety PRIVATE ictk_core)
+ictk_apply_compiler_options(test_pid_aw_post_safety)
+add_test(NAME pid_aw_post_safety COMMAND test_pid_aw_post_safety)
+
+add_executable(test_pid_derivative_kick tests_pid/property/pid_derivative_kick.cpp)
+target_link_libraries(test_pid_derivative_kick PRIVATE ictk_core)
+ictk_apply_compiler_options(test_pid_derivative_kick)
+add_test(NAME pid_derivative_kick COMMAND test_pid_derivative_kick)
