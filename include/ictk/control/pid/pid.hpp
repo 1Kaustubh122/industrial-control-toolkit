@@ -217,12 +217,29 @@ namespace ictk::control::pid{
             }
 
             [[nodiscard]] Status start() noexcept override{
+                if (!kp_ || !ki_ || !kd_ || !beta_ || !gamma_ || !uff_ ||
+                    !integ_ || !y_prev_ || !r_prev_ || !dyf_ || !drf_ || !a1_ || !b_ ||
+                    !tmp_ || !kidt_) return Status::kNotReady;
                 return ControllerBase::start(); // started = true -> returns Status::kOk
+            }
+
+            // // reset
+            [[nodiscard]] Status reset() noexcept override{
+                Status base = ControllerBase::reset();
+                const std::size_t n = dims().nu;
+                if (!integ_ || !dyf_ || !drf_ || !y_prev_ || !r_prev_ ) return base;
+                for (std::size_t i=0; i<n; ++i){
+                    integ_[i] = 0;
+                    dyf_[i] = 0;
+                    drf_[i] = 0;
+                    y_prev_[i] = 0;
+                    r_prev_[i] = 0;
+                }
+                return base;
             }
 
             // Bumpless transfer
             void align_bumpless(std::span<const Scalar> u_hold, std::span<const Scalar> r0, std::span<const Scalar> y0) noexcept{
-                const std::size_t n = dims().nu;
                 const std::size_t m = std::min({
                     u_hold.size(),
                     r0.size(),
@@ -293,7 +310,6 @@ namespace ictk::control::pid{
                     const Scalar KI = use_sched ? sKi : ki_[i];
 
                     const Scalar B = use_sched ? sB : beta_[i];
-                    const Scalar G = use_sched ? sG : gamma_[i];
 
                     const Scalar yk = ctx.plant.y[i];
                     const Scalar rk = ctx.sp.r[i];
