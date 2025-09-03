@@ -3,8 +3,10 @@
 
 #include "ictk/all.hpp"
 #include "ictk/control/pid/pid.hpp"
+#include "ictk/safety/anti_windup.hpp"
 
 using namespace ictk;
+using ictk::safety::AWMode;
 using namespace ictk::control::pid;
 
 /*
@@ -55,7 +57,7 @@ int main(){
 
     setup_limits(c); // add +- 0.2 actuator clamp
 
-    c.aw_mode = AwMode::kBackCalc;
+    c.aw_mode = AWMode::kBackCalc;
     c.Kt = 0.5;  // back calc gain
 
     assert(pid_bc.configure(c) == Status::kOK);
@@ -66,7 +68,7 @@ int main(){
 
     assert(pid_ci.init(d, dt, arena, {}) == Status::kOK);
 
-    c.aw_mode = AwMode::kConditional;
+    c.aw_mode = AWMode::kConditional;
     c.Kt = 0.5;
 
     assert(pid_ci.configure(c) == Status::kOK);

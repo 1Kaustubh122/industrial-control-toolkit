@@ -19,13 +19,6 @@
 
 namespace ictk::control::pid{
 
-    // // Anti Windup Mode
-    enum class AwMode: std::uint8_t {
-        kBackCalc,      // u_sat - u_unsat
-        kConditional,   // stop integrating when saturated and error has wrong sign
-        kOff            // no AW -> Only for testing
-    };
-
     // picewise-linear gain scheduling 
     struct ScheduleConfig{
         // bp => strictly increasing breakpoints, *_tab => same length as bp, pre breakpoints value || interpolate at runtimeS
@@ -46,11 +39,7 @@ namespace ictk::control::pid{
         std::span<const Scalar> umin, umax, du_max, ddu_max;
 
         // anti windup
-        AwMode aw_mode{
-            AwMode::kBackCalc
-        };
-
-
+        ictk::safety::AWMode aw_mode{ictk::safety::AWMode::kBackCalc};
         Scalar Kt{0.0}; // back calc gain
 
         // watchdog
@@ -349,32 +338,34 @@ namespace ictk::control::pid{
             }
 
             void anti_windup_update(
-                const UpdateContext&, std::span<const Scalar> u_unsat,
+                const UpdateContext&, 
+                std::span<const Scalar> u_unsat,
                 std::span<const Scalar> u_sat
             ) noexcept override{
-                const std::size_t n = dims().nu;
-                for (std::size_t i = 0; i < n; ++i) {
-                    const bool saturated = (u_unsat[i] != u_sat[i]);
-                    const Scalar e = tmp_[i]; // error stored in compute_core
+            using safety::AWMode;
+            using safety::aw_backcalc_term;
+            using safety::aw_conditional_term;
 
-                    switch(aw_mode_) {
-                        case AwMode::kOff:
-                            // no anti-windup, no integrator change
-                            break;
-
-                        case AwMode::kConditional:
-                            if (!saturated) {
-                                integ_[i] += kidt_[i] * e;
-                            }
-                            break;
-
-                        case AwMode::kBackCalc:
-                            integ_[i] += kidt_[i] * e;                 // normal I
-                            integ_[i] += Kt_ * (u_sat[i] - u_unsat[i]);// back-calc term
-                            break;
+            const std::size_t n = dims().nu;
+            for (std::size_t i=0;i<n;++i){
+                const Scalar e = tmp_[i];              
+                const Scalar i_inc = kidt_[i] * e;   
+                Scalar bc = 0;
+                switch (aw_mode_) {
+                    case AWMode::kBackCalc: 
+                        bc = aw_backcalc_term(u_unsat[i], u_sat[i], Kt_); 
+                        break;
+                    case AWMode::kConditional:
+                        bc = aw_conditional_term(u_unsat[i], u_sat[i], Kt_); 
+                        break;
+                    case AWMode::kOff:
+                        bc = Scalar(0); 
+                        break;
                     }
-                }
+                integ_[i] += i_inc + bc;
             }
+        }
+
 
 
         private:
