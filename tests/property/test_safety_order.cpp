@@ -30,17 +30,17 @@ class SpyController final: public ControllerBase{
             return Status::kOK;
         }
 
-        void apply_saturation(std::span<Scalar>) noexcept override{
+        SatStep apply_saturation(std::span<Scalar>) noexcept override{
             tr_.seq.push_back('S');
         }
-        void apply_rate_limit(std::span<Scalar>) noexcept override{
+        std::uint64_t apply_rate_limit(std::span<Scalar>) noexcept override{
             tr_.seq.push_back('R');
         }
-        void apply_jerk_limit(std::span<Scalar>) noexcept override{
+        std::uint64_t apply_jerk_limit(std::span<Scalar>) noexcept override{
             tr_.seq.push_back('J');
         
         }
-        void anti_windup_update(const UpdateContext&, std::span<const Scalar>) noexcept override{
+        void anti_windup_update(const UpdateContext&, std::span<const Scalar>) noexcept{
             tr_.seq.push_back('A');
         }
 
