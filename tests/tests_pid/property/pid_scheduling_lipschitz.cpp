@@ -26,6 +26,11 @@ int main(){
 
     PIDConfig c{};
 
+    /*
+    two breakpoints for schedule variable [0, 1]
+    kp is piecewise linear across
+    ki = kd = 0 across the range, so the controller degenerated to pure proportional with setpoint weight 
+    */
     static Scalar z[]{0.0}, o[]{1.0};
     static Scalar bp[]{0.0, 1.0};
     static Scalar kp_tab[]{1.0, 3.0};
@@ -66,17 +71,17 @@ int main(){
         .preview_horizon_len=0
     };
 
-    // At var=0.2 vs 0.3, Kp changes linearly; output difference bounded by |ΔKp|*|e|
+    // At var=0.2 vs 0.3, Kp changes linearly;
     ps.t += dt; y[0] = 0.2; 
     assert(pid.update({ps,sp},res)==Status::kOK); 
 
-    const double u1=u[0];
+    const double u1 = u[0];
     ps.t += dt; y[0] = 0.3; 
     assert(pid.update({ps,sp},res)==Status::kOK); 
-    const double u2=u[0];
+    const double u2= u[0];
 
-    const double dKp = (3.0-1.0)*(0.1); // Δvar=0.1 over [0,1]
-    const double bound = std::abs(dKp * (1.0 - 0.3)); // e = r - y
+    const double dKp = (3.0-1.0)*(0.1); 
+    const double bound = std::abs(dKp * (1.0 - 0.3));
     assert(std::abs(u2 - u1) <= bound + 1e-9);
     return 0;
 
