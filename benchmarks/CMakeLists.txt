@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.20)
+
+add_executable(bench_pid_vs_baseline runners/bench_pid_vs_baseline.cc)
+target_link_libraries(bench_pid_vs_baseline PRIVATE ictk_core)
+ictk_apply_compiler_options(bench_pid_vs_baseline)
