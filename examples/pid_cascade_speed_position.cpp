@@ -62,6 +62,7 @@ int main(){
 
     // Buffers: actual command, measured speed, measured position, reference position 
     std::vector<Scalar> u(1,0), y_pos(1,0), y_spd(1,0), r_pos(1,1.0);
+    std::vector<Scalar> v_ref(1,0);
 
     Result u_inner{
         .u=std::span<Scalar>(u.data(),1),
@@ -82,7 +83,7 @@ int main(){
 
 
     Result u_outer{
-        .u=std::span<Scalar>(y_pos.data(),1),
+        .u=std::span<Scalar>(v_ref.data(),1),
         .health={}
     };
 
@@ -102,7 +103,7 @@ int main(){
         ps_pos.t += dt;
         assert(outer.update({ps_pos, sp_pos}, u_outer)==Status::kOK);
 
-        sp_spd.r = std::span<const Scalar>(y_pos.data(),1); // inner setpoint = outer output
+        sp_spd.r = std::span<const Scalar>(v_ref.data(),1);
     
         ps_spd.t += dt; // tick
         assert(inner.update({ps_spd, sp_spd}, u_inner)==Status::kOK);
