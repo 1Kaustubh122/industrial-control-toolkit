@@ -1,0 +1,7 @@
+add_executable(example_pid_position examples/pid_position_control.cpp)
+target_link_libraries(example_pid_position PRIVATE ictk_core)
+ictk_apply_compiler_options(example_pid_position)
+
+add_executable(example_pid_cascade examples/pid_cascade_speed_position.cpp)
+target_link_libraries(example_pid_cascade PRIVATE ictk_core)
+ictk_apply_compiler_options(example_pid_cascade)

@@ -36,7 +36,10 @@ target_include_directories(ictk_core INTERFACE
 ictk_apply_compiler_options(ictk_core)
 ictk_apply_sanitizers(ictk_core)
 
-add_subdirectory(benchmarks)
+option(ICTK_BUILD_BENCHMARKS "Build ICTK benchmark runner" ON)
+if (ICTK_BUILD_BENCHMARKS)
+  add_subdirectory(benchmarks)
+endif()
 
 ## TESTING
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)

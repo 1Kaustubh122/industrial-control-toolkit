@@ -101,3 +101,18 @@ add_executable(test_pid_derivative_kick tests_pid/property/pid_derivative_kick.c
 target_link_libraries(test_pid_derivative_kick PRIVATE ictk_core)
 ictk_apply_compiler_options(test_pid_derivative_kick)
 add_test(NAME pid_derivative_kick COMMAND test_pid_derivative_kick)
+
+add_executable(test_imc_pid tests_pid/unit/imc_pid_synthesize_test.cpp)
+target_link_libraries(test_imc_pid PRIVATE ictk_core)
+ictk_apply_compiler_options(test_imc_pid)
+add_test(NAME imc_pid_synthesize_test COMMAND test_imc_pid)
+
+add_executable(test_pid_rate_lipschitz tests_pid/property/pid_rate_lipschitz_property.cpp)
+target_link_libraries(test_pid_rate_lipschitz PRIVATE ictk_core)
+ictk_apply_compiler_options(test_pid_rate_lipschitz)
+add_test(NAME pid_rate_lipschitz_property COMMAND test_pid_rate_lipschitz)
+
+add_executable(test_pid_jerk_lipschitz tests_pid/property/pid_jerk_lipschitz_property.cpp)
+target_link_libraries(test_pid_jerk_lipschitz PRIVATE ictk_core)
+ictk_apply_compiler_options(test_pid_jerk_lipschitz)
+add_test(NAME pid_jerk_lipschitz_property COMMAND test_pid_jerk_lipschitz)
