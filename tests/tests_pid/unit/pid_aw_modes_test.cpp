@@ -120,13 +120,18 @@ int main(){
     compare outputs should both be at clamp but AW trajectories differ (health.aw_term_mag same)
     */
 
-    // both saturated
-    assert(u1[0] == u2[0]);
+    // both saturated at +0.2
+    assert(std::abs(u1[0] - 0.2) < 1e-12);
+    assert(std::abs(u2[0] - 0.2) < 1e-12);
 
-    // back calc should show similar or faster convergence of I when desaturating
-    // indirect check aw term mag computed
-
-    (void) res1.health.aw_term_mag;
-
+    r[0] = 0.0;
+    // back-calc should unwind I faster after demand is removed
+    for (int k = 0; k < 50; ++k){
+        ps.t += dt;
+        (void)pid_bc.update({ps, sp}, res1);
+        (void)pid_ci.update({ps, sp}, res2);
+    }
+    // BC should be closer to 0 than CI
+    assert(std::abs(u1[0]) < std::abs(u2[0]));
     return 0;
 }

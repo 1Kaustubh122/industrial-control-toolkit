@@ -67,6 +67,9 @@ int main(){
     ps.t += dt; 
     assert(pid.update({ps,sp},res)==Status::kOK);
 
-    assert(std::abs(res.health.aw_term_mag - (std::abs(0.1 - u[0]) + 0.0)) >= 0.0); 
+    // anti windup
+    const double expected = std::abs(0.1 - 50.0);
+    assert(std::fabs(res.health.aw_term_mag - expected) < 1e-6);
+
     return 0;
 }

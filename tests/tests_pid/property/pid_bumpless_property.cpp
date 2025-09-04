@@ -1,4 +1,5 @@
 #include <vector>
+#include <cmath>
 #include <cassert>
 
 #include "ictk/all.hpp"
