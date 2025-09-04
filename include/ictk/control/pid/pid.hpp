@@ -409,8 +409,8 @@ namespace ictk::control::pid{
             std::optional<safety::Watchdog> wd_;
             std::optional<safety::FallbackPolicy> fb_;
 
-            AwMode aw_mode_{
-                AwMode::kBackCalc
+            AWMode aw_mode_{
+                AWMode::kBackCalc
             };
 
             Scalar Kt_{0};
