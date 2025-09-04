@@ -1,4 +1,5 @@
-# Industrial Control Toolkit (ICTK)  *Under Development: Shipping by End August*
+# Industrial Control Toolkit (ICTK)  
+*Under Development: Shipping base version by 7 Sept*
 
 **A portable, deterministic, production-grade control library for real-world automation.**
 
@@ -58,10 +59,10 @@ See [`docs/Architecture.md`](docs/Architecture.md) for the full module layout an
 
 ## Repository structure
 
-* **include/** — public headers, stable API.
-* **src/** — implementations.
-* **control/** — all controller families.
-* **safety/** — safety wrappers and limits.
+* **include/ictk/core** — public headers.
+* **include/ictk/c_api** — Stable C API.
+* **include/ictk/control/** — all controller families.
+* **include/ictk/safety/** — safety wrappers and limits.
 * **models/** — plant models, fitters, filters.
 * **traj/** — trajectory generators.
 * **opt/** — optimization core.
