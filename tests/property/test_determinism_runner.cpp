@@ -16,7 +16,7 @@ static std::vector<std::uint8_t> run_once(std::size_t N, Dims dims, dt_ns dt){
     alignas(64) std::byte buffer[4096];
     MemoryArena arena(buffer, sizeof(buffer));
 
-    auto st = ctrl.init(dims, dt, arena, {});
+    [[maybe_unused]] auto st = ctrl.init(dims, dt, arena, {});
     assert(st == Status::kOK);
 
     st = ctrl.start();
@@ -50,8 +50,8 @@ static std::vector<std::uint8_t> run_once(std::size_t N, Dims dims, dt_ns dt){
 
     // // sanpshot allocation counters after warmup allocations
     ictk_test::reset_alloc_stats();
-    auto new0 = ictk_test::new_count();
-    auto newA0 = ictk_test::new_aligned_count();
+    [[maybe_unused]] auto new0 = ictk_test::new_count();
+    [[maybe_unused]] auto newA0 = ictk_test::new_aligned_count();
 
     for (std::size_t k=0; k<N; ++k){
         ps.t += dt;
@@ -64,8 +64,8 @@ static std::vector<std::uint8_t> run_once(std::size_t N, Dims dims, dt_ns dt){
         bytes.insert(bytes.end(), p, p+u.size()*sizeof(Scalar));
     }
 
-    auto new1 = ictk_test::new_count();
-    auto newA1 = ictk_test::new_aligned_count();
+    [[maybe_unused]] auto new1 = ictk_test::new_count();
+    [[maybe_unused]] auto newA1 = ictk_test::new_aligned_count();
 
 
     // // no alloc allwed during update ticks
