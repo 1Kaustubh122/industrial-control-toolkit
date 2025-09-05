@@ -8,6 +8,7 @@
 
 #include "ictk/core/time.hpp"
 #include "ictk/core/types.hpp"
+#include "ictk/safety/clip.hpp"
 #include "ictk/core/memory_arena.hpp"
 
 /*
@@ -17,11 +18,6 @@ Goal: To bound, how fast each command element can change per tick
     and returns how many elements were clamped this tick
 */
 namespace ictk::safety{
-    struct Clip{
-        Scalar val; //final clamp value
-        bool hit;   // was clamped?
-        Scalar mag; // how far outside the limit is
-    };
 
     // helper function
     static inline Clip rate_limiter_scalar(Scalar u_now, Scalar u_prev, Scalar du_max){
@@ -97,9 +93,6 @@ namespace ictk::safety{
                 return last_mag_;
             }
 
-            bool valid() const noexcept{
-                return prev_ != nullptr;
-            }
 
         private:
             std::span <const Scalar> rmax_{};

@@ -8,6 +8,7 @@
 
 #include "ictk/core/time.hpp"
 #include "ictk/core/types.hpp"
+#include "ictk/safety/clip.hpp"
 #include "ictk/core/memory_arena.hpp"
 
 /*
@@ -25,11 +26,6 @@ namespace ictk::safety{
     // Avoid duplicate definition if other safety headers also define Clip.
     #ifndef ICTK_SAFETY_CLIP_DEFINED
     #define ICTK_SAFETY_CLIP_DEFINED
-    struct Clip{
-        Scalar val; // final clamp value
-        bool hit;   // was clamped?
-        Scalar mag; // how far outside the limit is
-    };
 
     static inline Clip jerk_limit_scalar(
         Scalar u_now,
