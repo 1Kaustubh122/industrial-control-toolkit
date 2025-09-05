@@ -174,8 +174,8 @@ namespace ictk{
             virtual std::uint64_t apply_jerk_limit(std::span<Scalar> /*u*/) noexcept{ return 0; }
 
             virtual void anti_windup_update(const UpdateContext& /*ctx*/,
-                                            std::span<const Scalar> u_unsat,
-                                            std::span<const Scalar> u_sat) noexcept {}
+                                            [[maybe_unused]] std::span<const Scalar> u_unsat,
+                                            [[maybe_unused]] std::span<const Scalar> u_sat) noexcept {}
 
             // // Helpers from derived classes (no ownership)
             const Dims &dims() const noexcept {
