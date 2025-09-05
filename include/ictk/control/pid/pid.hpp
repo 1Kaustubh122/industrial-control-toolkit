@@ -299,6 +299,7 @@ namespace ictk::control::pid{
                     const Scalar KI = use_sched ? sKi : ki_[i];
 
                     const Scalar B = use_sched ? sB : beta_[i];
+                    const Scalar G  = use_sched ? sG  : gamma_[i];
 
                     const Scalar yk = ctx.plant.y[i];
                     const Scalar rk = ctx.sp.r[i];
@@ -314,7 +315,7 @@ namespace ictk::control::pid{
                     r_prev_[i] = rk;
 
                     const Scalar P = KP * e;
-                    const Scalar D = (-KD * dy);
+                    const Scalar D = -KD * (dy - G * dr);
                     u[i] = P + integ_[i] + D + uff_[i];
 
                     tmp_[i] = e;
@@ -409,9 +410,10 @@ namespace ictk::control::pid{
             std::optional<safety::Watchdog> wd_;
             std::optional<safety::FallbackPolicy> fb_;
 
-            AWMode aw_mode_{
-                AWMode::kBackCalc
+            ictk::safety::AWMode aw_mode_{
+                ictk::safety::AWMode::kBackCalc
             };
+
 
             Scalar Kt_{0};
             ScheduleConfig sched_{};
