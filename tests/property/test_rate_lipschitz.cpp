@@ -24,7 +24,7 @@ int main(){
     for (int k=0; k<5; ++k){
         u = cmd;        // desired command per tick -> simulate fresh large request
         rl.apply(u);    // limiter clamps in place
-        for (double ui: u) assert(std::abs(ui) <= (k+1) * 0.01 + 1e-12);
+        for ([[maybe_unused]] double ui: u) assert(std::abs(ui) <= (k+1) * 0.01 + 1e-12);
         /*
             each tick -> the limiter restricts the change from the previous emitted value by 0.01
             after k tick -> the magnitude cannot exceed (k+1)*0.01 from 0

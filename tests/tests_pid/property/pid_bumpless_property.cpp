@@ -9,7 +9,7 @@ using namespace ictk;
 using namespace ictk::control::pid;
 
 int main(){
-    Dims d{
+    [[maybe_unused]] Dims d{
         .ny = 1,
         .nu = 1,
         .nx = 0
@@ -39,15 +39,15 @@ int main(){
     assert(pid.start()==Status::kOK);
 
     std::vector<Scalar> u(1,0), y(1,0), r(1,0);
-    Result res{
+    [[maybe_unused]] Result res{
         .u=std::span<Scalar>(u.data(),1), 
         .health={}
     };
-    PlantState ps{
+    [[maybe_unused]] PlantState ps{
         .y=std::span<const Scalar>(y.data(),1), 
         .xhat={}, .t=0, .valid_bits=0x1
     };
-    Setpoint sp{
+    [[maybe_unused]] Setpoint sp{
         .r=std::span<const Scalar>(r.data(),1), 
         .preview_horizon_len=0
     };

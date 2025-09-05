@@ -51,7 +51,7 @@ int main(){
     ictk::control::pid::PIDCore pid;
 
     // initialise (dims, dt_ns, MemoryArena, Hooks)
-    auto st = pid.init(d, dt, arena, {});
+    [[maybe_unused]] auto st = pid.init(d, dt, arena, {});
     assert(st == Status::kOK);
 
     auto cfg = siso_cfg_basic();
@@ -69,19 +69,19 @@ int main(){
     // Alloc on-element vectors for command (u), measurement (y), setpoint (r) -> all init to 0
     std::vector<Scalar> u(1, 0), y(1,0), r(1,0);
 
-    Result res{
+    [[maybe_unused]] Result res{
         .u = std::span<Scalar>(u.data(), 1), 
         .health = {}
     };
 
-    PlantState ps{
+    [[maybe_unused]] PlantState ps{
         .y = std::span<Scalar>(y.data(), 1),
         .xhat = {},
         .t = 0,
         .valid_bits = 0x1
     };
 
-    Setpoint sp{
+    [[maybe_unused]] Setpoint sp{
         .r = std::span<const Scalar>(r.data(), 1),
         .preview_horizon_len = 0
     };
@@ -102,10 +102,10 @@ int main(){
     assert(pid.update({ps, sp}, res) == Status::kOK);
     
     // change in output 
-    const double delta = u[0] - u0;
+    [[maybe_unused]] const double delta = u[0] - u0;
 
     // compute expected chagne from P + I only
-    const double expected = 2.0 /*Kp*(Δr)*/ + 1.0 * 0.001 /*Ki*dt*e*/; // 2.001
+    [[maybe_unused]] const double expected = 2.0 /*Kp*(Δr)*/ + 1.0 * 0.001 /*Ki*dt*e*/; // 2.001
 
     assert(std::abs(delta - expected) < 1e-6);      // no D contribution
 

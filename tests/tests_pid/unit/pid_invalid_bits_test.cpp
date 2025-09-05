@@ -13,7 +13,7 @@ to check: PID rejectes updates if some plan measurement channels are marked inva
 
 int main(){
     // MIMO -> Multi Input Multi Output
-    Dims d{
+    [[maybe_unused]] Dims d{
         .ny=2,
         .nu=2,
         .nx=0
@@ -62,7 +62,7 @@ int main(){
     };
 
     ps.t += dt;
-    auto st = pid.update({ps, sp}, res);
+    [[maybe_unused]] auto st = pid.update({ps, sp}, res);
     assert(st == Status::kPreconditionFail);
 
     assert(u[0] == 0 && u[1]==0);

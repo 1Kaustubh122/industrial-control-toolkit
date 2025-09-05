@@ -10,7 +10,7 @@ using namespace ictk::control::pid;
 
 int main(){
     // SISO
-    Dims d{
+    [[maybe_unused]] Dims d{
         .ny = 1,
         .nu = 1,
         .nx = 0
@@ -43,22 +43,22 @@ int main(){
         assert(pid.start()==Status::kOK);
 
         std::vector<Scalar> u(1,0), y(1,0), r(1,0);
-        Result res{
+        [[maybe_unused]] Result res{
             .u=std::span<Scalar>(u.data(),1), 
             .health={}
         };
-        PlantState ps{
+        [[maybe_unused]] PlantState ps{
             .y=std::span<const Scalar>(y.data(),1), 
             .xhat={}, 
             .t=0, 
             .valid_bits=0x1
         };
-        Setpoint sp{
+        [[maybe_unused]] Setpoint sp{
             .r=std::span<const Scalar>(r.data(),1), 
             .preview_horizon_len=0
         };
 
-        double u0 = u[0]; // baseline = 0
+        [[maybe_unused]] double u0 = u[0]; // baseline = 0
         r[0] = 1.0;       // step setpoint at first real tick
         ps.t += dt;
         assert(pid.update({ps, sp}, res) == Status::kOK);   // compute one ticl
@@ -67,8 +67,8 @@ int main(){
 
 
     // // two cases: gamma = 0 and gamma = 1
-    const double d0 = run(0.0);
-    const double d1 = run(1.0);
+    [[maybe_unused]] const double d0 = run(0.0);
+    [[maybe_unused]] const double d1 = run(1.0);
 
     assert(d1 > d0);
     return 0;

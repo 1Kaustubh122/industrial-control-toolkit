@@ -26,7 +26,7 @@ static void setup_limits(PIDConfig & c){
 
 int main(){
     // SISO => 1 input and 1 output
-    Dims d{
+    [[maybe_unused]] Dims d{
         .ny = 1,
         .nu = 1,
         .nx = 0
@@ -82,20 +82,20 @@ int main(){
     */
     std::vector<Scalar> u1(1,0), u2(1,0), y(1,0), r(1, 1.0);
 
-    PlantState ps{
+    [[maybe_unused]] PlantState ps{
         .y = std::span<const Scalar>(y.data(), 1),
         .xhat = {},
         .t = 0,
         .valid_bits = 0x1
     };
 
-    Setpoint sp{
+    [[maybe_unused]] Setpoint sp{
         .r = std::span<const Scalar> (r.data(), 1),
         .preview_horizon_len = 0
     };
 
     // Two seperate result
-    Result 
+    [[maybe_unused]] Result 
     res1{
         .u = std::span<Scalar>(u1.data(), 1),
         .health={}

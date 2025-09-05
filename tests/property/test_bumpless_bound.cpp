@@ -24,7 +24,7 @@ int main(){
         // bound
         for (std::size_t i=0; i<3; ++i){
             [[maybe_unused]] const Scalar e = out[i] - goal[i];  // // ek
-            const Scalar bound = std::pow(1.0-alpha, k) * std::abs(err0[i]) + 1e-12;
+            [[maybe_unused]] const Scalar bound = std::pow(1.0-alpha, k) * std::abs(err0[i]) + 1e-12;
             assert(std::abs(e) <= bound);
         }
         cur = out;      // advnace

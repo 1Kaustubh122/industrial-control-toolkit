@@ -32,13 +32,15 @@ class SpyController final: public ControllerBase{
 
         SatStep apply_saturation(std::span<Scalar>) noexcept override{
             tr_.seq.push_back('S');
+            return {};
         }
         std::uint64_t apply_rate_limit(std::span<Scalar>) noexcept override{
             tr_.seq.push_back('R');
+            return 0;
         }
         std::uint64_t apply_jerk_limit(std::span<Scalar>) noexcept override{
             tr_.seq.push_back('J');
-        
+            return 0;
         }
         void anti_windup_update(const UpdateContext&, std::span<const Scalar>) noexcept{
             tr_.seq.push_back('A');
@@ -74,7 +76,7 @@ class SpyController final: public ControllerBase{
     SpyController c(tr);
     // // Create the controller
 
-    auto st = c.init(d, dt, arena, hooks);
+    [[maybe_unused]] auto st = c.init(d, dt, arena, hooks);
     // life cycle init
     assert(st == Status::kOK);
 
@@ -111,7 +113,7 @@ class SpyController final: public ControllerBase{
     // // runs the pipeline once
     assert(st == Status::kOK);
 
-    const char expected[] = {'C', 'P', 'S', 'R', 'J', 'A', 'O'};
+    [[maybe_unused]] const char expected[] = {'C', 'P', 'S', 'R', 'J', 'A', 'O'};
     /*
     Safety step order:
     C -> compute_core  -> raw commands (eg: PID = Kp*error)
