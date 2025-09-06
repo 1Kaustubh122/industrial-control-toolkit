@@ -8,54 +8,148 @@
 using namespace ictk;
 using namespace ictk::control::pid;
 
-int main(){
-    [[maybe_unused]] Dims d{
-        .ny = 1,
-        .nu = 1,
-        .nx = 0
-    };
 
+int main(){
+    Dims d{ .ny=1, .nu=1, .nx=0 };
     dt_ns dt = 1'000'000;
 
     alignas(64) std::byte buf[4096];
-
     MemoryArena arena(buf, sizeof(buf));
 
     PIDCore pid;
-    assert(pid.init(d, dt, arena, {}) == Status::kOK);
+    if (pid.init(d, dt, arena, {}) != Status::kOK) return 1;
 
     PIDConfig c{};
-
     static Scalar Kp[]{2.0}, Ki[]{1.0}, Kd[]{0.0}, beta[]{1.0}, gamma[]{0.0}, bias[]{0.0};
+    c.Kp={Kp,1}; c.Ki={Ki,1}; c.Kd={Kd,1}; c.beta={beta,1}; c.gamma={gamma,1}; c.u_ff_bias={bias,1};
 
-    c.Kp={Kp,1}; 
-    c.Ki={Ki,1}; 
-    c.Kd={Kd,1}; 
-    c.beta={beta,1}; 
-    c.gamma={gamma,1}; 
-    c.u_ff_bias={bias,1};
-
-    assert(pid.configure(c)==Status::kOK); 
-    assert(pid.start()==Status::kOK);
+    if (pid.configure(c) != Status::kOK) return 2;
+    if (pid.start() != Status::kOK) return 3;
 
     std::vector<Scalar> u(1,0), y(1,0), r(1,0);
-    [[maybe_unused]] Result res{
-        .u=std::span<Scalar>(u.data(),1), 
-        .health={}
-    };
-    [[maybe_unused]] PlantState ps{
-        .y=std::span<const Scalar>(y.data(),1), 
+
+    // align hold = 0 at r0=y0=0 -> output should be 0 next tick
+    pid.align_bumpless(
+        std::span<const Scalar>(u.data(), 1),
+        std::span<const Scalar>(r.data(), 1),
+        std::span<const Scalar>(y.data(), 1)
+    );
+
+    PlantState ps{
+        .y=std::span<const Scalar>(y.data(),1),
         .xhat={}, .t=0, .valid_bits=0x1
     };
-    [[maybe_unused]] Setpoint sp{
-        .r=std::span<const Scalar>(r.data(),1), 
+    Setpoint sp{
+        .r=std::span<const Scalar>(r.data(),1),
         .preview_horizon_len=0
     };
+    Result res{
+        .u=std::span<Scalar>(u.data(),1),
+        .health={}
+    };
 
-    // Alighn hold = 0 at r0=y0=0 -< output should be 0 next tick
-    pid.align_bumpless(std::span<const Scalar>(u.data(), 1), sp.r, ps.y);
     ps.t += dt;
-    assert(pid.update({ps, sp}, res) == Status::kOK);
+    UpdateContext ctx{ ps, sp };
+
+    if (pid.update(ctx, res) != Status::kOK) return 4;
     assert(std::abs(u[0]) <= 1e-12);
     return 0;
 }
+
+
+
+
+// int main(){
+//     [[maybe_unused]] Dims d{
+//         .ny = 1,
+//         .nu = 1,
+//         .nx = 0
+//     };
+
+//     dt_ns dt = 1'000'000;
+
+//     alignas(64) std::byte buf[4096];
+
+//     MemoryArena arena(buf, sizeof(buf));
+
+//     PIDCore pid;
+//     assert(pid.init(d, dt, arena, {}) == Status::kOK);
+
+//     PIDConfig c{};
+
+//     static Scalar Kp[]{2.0}, Ki[]{1.0}, Kd[]{0.0}, beta[]{1.0}, gamma[]{0.0}, bias[]{0.0};
+
+//     c.Kp={Kp,1}; 
+//     c.Ki={Ki,1}; 
+//     c.Kd={Kd,1}; 
+//     c.beta={beta,1}; 
+//     c.gamma={gamma,1}; 
+//     c.u_ff_bias={bias,1};
+
+//     assert(pid.configure(c)==Status::kOK); 
+//     assert(pid.start()==Status::kOK);
+
+//     std::vector<Scalar> u(1,0), y(1,0), r(1,0);
+//     Result res{
+//         .u=std::span<Scalar>(u.data(),1), 
+//         .health={}
+//     };
+
+//     // Align hold = 0 at r0=y0=0 -> next tick output should be 0
+// pid.align_bumpless(
+//     std::span<const Scalar>(u.data(), 1),   // u_hold
+//     std::span<const Scalar>(r.data(), 1),   // r0
+//     std::span<const Scalar>(y.data(), 1)    // y0
+// );
+
+// // Build one stable UpdateContext that *directly spans* y & r
+// PlantState ps{
+//     .y          = std::span<const Scalar>(y.data(), 1),
+//     .xhat       = {},
+//     .t          = 0,
+//     .valid_bits = 0x1
+// };
+// Setpoint sp{
+//     .r                   = std::span<const Scalar>(r.data(), 1),
+//     .preview_horizon_len = 0
+// };
+// Result res{
+//     .u      = std::span<Scalar>(u.data(), 1),
+//     .health = {}
+// };
+
+// // advance one tick and run
+// ps.t += dt;
+// assert(pid.update({ps, sp}, res) == Status::kOK);
+// assert(std::abs(u[0]) <= 1e-12);
+// return 0;
+
+// }
+
+
+//     // Align hold = 0 at r0=y0=0 -< output should be 0 next tick
+//     pid.align_bumpless(
+//         std::span<const Scalar>(u.data(), 1),
+//         std::span<const Scalar>(r.data(), 1),
+//         std::span<const Scalar>(y.data(), 1)
+//     );
+    
+//     UpdateContext ctx{
+//         .plant = PlantState{
+//             .y          = std::span<const Scalar>(y.data(), 1),
+//             .xhat       = {},
+//             .t          = 0,
+//             .valid_bits = 0x1
+//         },
+//         .sp = Setpoint{
+//             .r                   = std::span<const Scalar>(r.data(), 1),
+//             .preview_horizon_len = 0
+//         }
+//     };
+
+//     ctx.plant.t += dt;
+    
+//     assert(pid.update(ctx, res) == Status::kOK);
+//     assert(std::abs(u[0]) <= 1e-12);
+//     return 0;
+// }

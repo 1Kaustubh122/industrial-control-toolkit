@@ -112,6 +112,8 @@ namespace ictk{
                 std::memcpy(work_buf_, pre_buf_, dims_.nu * sizeof(Scalar));
                 std::span<Scalar> u_work(work_buf_, dims_.nu);  // // Mutable vector -> without touching u_pre
 
+                if (!stage_buf_ || !work_buf_ || !pre_buf_) return Status::kNoMem;
+
                 // SAT stage
                 std::memcpy(stage_buf_, work_buf_, dims_.nu * sizeof(Scalar));
                 // // clamp to actuators limits

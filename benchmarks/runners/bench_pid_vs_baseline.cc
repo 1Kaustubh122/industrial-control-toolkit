@@ -63,7 +63,9 @@ static Stats summarize(std::vector<double>& ns){
     //              p = percentile
     auto q = [&](double p) -> double{
                             // index into sorted array
-        size_t i = (size_t)((p*(ns.size() - 1)));
+        const double pos = p * static_cast<double>(ns.size() - 1);
+        const std::size_t i = static_cast<std::size_t>(pos);
+
         return ns[i];
     };
     double jmin = ns.front(), jmax = ns.back();
@@ -79,21 +81,23 @@ static Stats summarize(std::vector<double>& ns){
 
 int main(int argc, char** argv){
     // CLI args
-    int nu = 1;         // no of control channels
+    int nu_ = 1;         // no of control channels
     int iters = 200000; // steps
     long long dt_arg_ns = 1'000'000; // 1ms
 
                     // str to int
-    if (argc>1) nu = std::stoi(argv[1]);
+    if (argc>1) nu_ = std::stoi(argv[1]);
     if (argc>2) iters = std::stoi(argv[2]);
     if (argc>3) dt_arg_ns = std::strtoll(argv[3], nullptr, 10);
+
+    const std::size_t nu = static_cast<std::size_t>(nu_);
 
     
     pin_thread_best_effort();
     
     Dims d{
-        .ny = (std::size_t)nu,
-        .nu = (std::size_t)nu,
+        .ny = static_cast<std::size_t>(nu),
+        .nu = static_cast<std::size_t>(nu),
         .nx=0
     };
     
@@ -152,7 +156,8 @@ int main(int argc, char** argv){
         ctx.plant = ps;
         ctx.sp = sp;
 
-        pid.update(ctx, res);
+        [[maybe_unused]] auto st_warm = pid.update(ctx, res);
+        assert(st_warm == Status::kOK);
     }
 
     // Benchmark
@@ -174,8 +179,8 @@ int main(int argc, char** argv){
 
     auto S = summarize(ns);
 
-    std::printf("pid,%d,%lld,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%s,%s,%s,%s,%s\n",
-              nu, (long long)dt, iters, S.p50, S.p95, S.p99, S.p999, S.jmin, S.jmax,
+    std::printf("pid,%zu,%lld,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%s,%s,%s,%s,%s\n",
+              nu, static_cast<long long>(dt), iters, S.p50, S.p95, S.p99, S.p999, S.jmin, S.jmax,
               "na", "na", "na", "na", "RelWithDebInfo");
 
     return 0;
