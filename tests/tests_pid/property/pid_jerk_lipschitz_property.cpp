@@ -9,7 +9,7 @@ using namespace ictk::control::pid;
 
 int main() {
     // SISO with both rate and jerk limits
-    Dims d{
+    [[maybe_unused]] Dims d{
         .ny=1,
         .nu=1,
         .nx=0
@@ -60,20 +60,20 @@ int main() {
     Scalar u_prev = 0.0;
     Scalar du_prev = 0.0;
 
-    const Scalar rate_bound = du[0] * dt_s + 1e-12;
-    const Scalar jerk_bound = ddu[0] * dt_s + 1e-12;
+    [[maybe_unused]] const Scalar rate_bound = du[0] * dt_s + 1e-12;
+    [[maybe_unused]] const Scalar jerk_bound = ddu[0] * dt_s + 1e-12;
 
     for (int k=0; k<300; ++k) {
         ps.t += dt;
-        auto st = pid.update({ps, sp}, res);
+        [[maybe_unused]] auto st = pid.update({ps, sp}, res);
         assert(st == Status::kOK);
 
         const Scalar du_k = u[0] - u_prev;
-        const Scalar ddu_k = du_k - du_prev;
+        [[maybe_unused]] const Scalar ddu_k = du_k - du_prev;
 
         // Rate Lipschitz
         assert(std::fabs(du_k) <= rate_bound);
-        
+
         // Jerk Lipschitz
         assert(std::fabs(ddu_k) <= jerk_bound);
 

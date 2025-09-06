@@ -10,7 +10,7 @@ using namespace ictk::control::pid;
 
 int main() {
     // SISO
-    Dims d{
+    [[maybe_unused]] Dims d{
         .ny=1,
         .nu=1,
         .nx=0
@@ -59,15 +59,15 @@ int main() {
     };
 
     Scalar u_prev = 0.0;
-    const Scalar bound = du[0] * dt_s + 1e-12;
+    [[maybe_unused]] const Scalar bound = du[0] * dt_s + 1e-12;
 
     for (int k=0; k<200; ++k) {
         ps.t += dt;
-        
-        auto st = pid.update({ps, sp}, res);
+
+        [[maybe_unused]] auto st = pid.update({ps, sp}, res);
         assert(st == Status::kOK);
 
-        const Scalar du_k = u[0] - u_prev;
+        [[maybe_unused]] const Scalar du_k = u[0] - u_prev;
         assert(std::fabs(du_k) <= bound);
 
         u_prev = u[0];
