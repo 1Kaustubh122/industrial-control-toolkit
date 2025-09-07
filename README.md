@@ -1,5 +1,5 @@
 # Industrial Control Toolkit (ICTK)  
-*Under Development: Shipping base version by 7 Sept*
+*Under active Development*
 
 **A portable, deterministic, production-grade control library for real-world automation.**
 
