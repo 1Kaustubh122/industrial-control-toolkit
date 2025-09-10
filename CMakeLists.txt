@@ -12,6 +12,8 @@ option(ICTK_ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(ICTK_ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
 ## Link Time Optimization (LTO) -> Optimizes the whole program by inline functions, dead code elimination, etc if activated
 option(ICTK_ENABLE_LTO "Enable Link Time Optimisation" OFF)
+## Build with benchmark
+option(ICTK_BUILD_BENCHMARKS "Build ICTK benchmark runner" ON)
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release" FORCE)
@@ -26,17 +28,37 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 include(ICTKCompilerOptions)
 include(ICTKSanitizers)
 
-add_library(ictk_core INTERFACE)
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+include(CheckIPOSupported)
 
-target_include_directories(ictk_core INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+add_library(ictk STATIC
+  src/ictk_version.cc
 )
 
-ictk_apply_compiler_options(ictk_core)
-ictk_apply_sanitizers(ictk_core)
+add_library(ictk::ictk ALIAS ictk)
 
-option(ICTK_BUILD_BENCHMARKS "Build ICTK benchmark runner" ON)
+target_include_directories(ictk 
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+target_compile_features(ictk PUBLIC cxx_std_20)
+
+ictk_apply_compiler_options(ictk)
+ictk_apply_sanitizers(ictk)
+
+if(ICTK_ENABLE_LTO)
+  check_ipo_supported(RESULT ipo_ok OUTPUT ipo_msg)
+  if(ipo_ok)
+    set_property(TARGET ictk PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+  else()
+    message(WARNING "IPO/LTO not supported: ${ipo_msg}")
+  endif()
+endif()
+
+## Benches
 if (ICTK_BUILD_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
@@ -50,5 +72,44 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 ## Install
-install(TARGETS ictk_core EXPORT ICTKTargets)
-install(EXPORT ICTKTargets NAMESPACE ictk:: DESTINATION lib/cmake/ictk)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(TARGETS ictk
+  EXPORT ictkTargets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(EXPORT ictkTargets
+  NAMESPACE ictk::
+  FILE ictkTargets.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ICTK
+)
+
+## Package Config
+configure_package_config_file(
+  cmake/ICTKConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/ICTKConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ICTK
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/ICTKConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/ICTKConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/ICTKConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ICTK
+)
+
+## Cpack (tarball)
+set(CPACK_PACKAGE_NAME "ictk")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_GENERATOR "TGZ")
+set(CPACK_PACKAGE_FILE_NAME "ictk-${PROJECT_VERSION}-linux-x86_64")
+include(CPack)
