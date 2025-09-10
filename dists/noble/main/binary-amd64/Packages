@@ -1,0 +1,14 @@
+Package: ictk-dev
+Architecture: amd64
+Priority: optional
+Section: libs
+Filename: pool/main/i/ictk-dev/ictk-dev_0.0.2_amd64.deb
+Size: 22482
+SHA256: 4480c8e4c1ff89829342681a1e0baf0930c63e692814ea880bac9961e05c2358
+SHA1: 8f5b19bae5c4d3899bb7b2a2923edf6e4d5794db
+MD5sum: 2f96cb550ffc0c2a93c8ec7f7018ed17
+Description: industrial-control-toolkit built using CMake
+Maintainer: Kaustubh <kkaustubh2006@gmail.com>
+Version: 0.0.2
+Installed-Size: 127
+

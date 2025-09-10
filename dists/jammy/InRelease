@@ -1,0 +1,38 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Origin: Kaustubh
+Label: ICTK
+Suite: stable
+Codename: jammy
+Date: Wed, 10 Sep 2025 15:24:56 UTC
+Architectures: amd64
+Components: main
+MD5Sum:
+ a1ea07425777575509a78e48506680e9 441 main/binary-amd64/Packages
+ 9e7aa1cdfcea2c1ecb6f794da3a73910 342 main/binary-amd64/Packages.gz
+ 6e5e9ae8ebc6e9a6ea0a23521b0a0763 81 main/binary-amd64/Release
+SHA1:
+ 8b8abc463ee22eeadcfa1ad1bc56d70ddd8e41d0 441 main/binary-amd64/Packages
+ 6cc77d2dbba7fdba382c788270410565f03e05fd 342 main/binary-amd64/Packages.gz
+ bab7fcdb014af7c8ea887aadbc2ac405f42c1b98 81 main/binary-amd64/Release
+SHA256:
+ 8fdba8c3b66872bfc6e6f96a56d79ff728c740074cc7d8ed0d2ccb278ef4f60e 441 main/binary-amd64/Packages
+ 4640f637f7ac655bb6fab3aa0d293a390b28741aa45a9e41fb15a135ecbbbfb9 342 main/binary-amd64/Packages.gz
+ 699dd6e2f4718f3ccb1399144611e8496a48d5d64224025fc747c2de519c0a81 81 main/binary-amd64/Release
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE37ZJAaLEbFckOe5Zj+tQx/8o9MMFAmjBmEgACgkQj+tQx/8o
+9MP+kBAAjkUZwv+NGToGnLI5iEl8cHm+NCg6rGJ+OgkBZwZ+xFNz5CA1Y4xnL5MR
+LDdHs8qPro3WqGbK9LXfWczCLehQMkPaSrnU6piZi9gLnf2HoufdauKYjYhy10UK
+8Xdyx+R/VbUXeqQ4+nT9qhFSjcOgKhaujiflaTYrHx3hICXtu1z440oAEosYywYh
+W7ne/4sYiH9oA5vtx20hN4/L1IzYZsZqnlSAbSFNJPn79YT6Inu5wHwsoL0kTThf
+7UmiL+bO2Kxm5IjLPF8pr1eajnAuMim2hVAtgNUICCBQOKJbgH6bzgltr0Jby763
+gv/pwZSLWUDyaVPMswj86nUZ6a4b8uNU3NwFq1awfjYWirQzqgDV4dUr62xUNagc
+7OeFh8TA44b7YgDqmehSWVQLxoE84ktVj01YuwkeRzgWzRLHnLLdyYqaZpNcj4ZX
+SVUZXxv/vGLzBlXgcCarb+nTj79DG6v0T/KSEHxqmZESd8bZgmQN9kwkNYgnsivX
+CANTYfY+ZA2FSEgbMs8OqTERBfbzAszJpHriqIp1/7oA7DmiUuKO5lter8vL+gE+
+7swyPnBCGnQbjTo0VYOTr6S6hMyajBlfUFf29cxi/o/vGXyApY1V1N5ysm/gwWkI
+XdpybaAzY2+K02CmUgw8Jv8xZP/pUqIaL9Fo+TWTQOKv+fg1Ly0=
+=9wqg
+-----END PGP SIGNATURE-----
