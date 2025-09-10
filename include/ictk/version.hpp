@@ -12,3 +12,10 @@ namespace ictk{
     constexpr char kVersionStr[] = "0.0.2"; 
     constexpr int kCAbiVersion = ICTK_C_ABI_VER;
 } // namespace ictk
+
+
+extern "C" {
+    // C ABI 
+    const char* ictk_version_string();
+    int         ictk_c_abi_version();
+}
