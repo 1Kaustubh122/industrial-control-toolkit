@@ -12,24 +12,24 @@ function(ictk_apply_sanitizers tgt)
 
     ## AddressSanitizer
     if (ICTK_ENABLE_ASAN)
-        target_compile_options(${tgt} INTERFACE
+        target_compile_options(${tgt} PRIVATE
             -fsanitize=address
             -fno-omit-frame-pointer
         )
 
-        target_link_options(${tgt} INTERFACE
+        target_link_options(${tgt} PRIVATE
             -fsanitize=address
         )
     endif()
 
     ## UndefinedBehaviorSanitizer
     if (ICTK_ENABLE_UBSAN)
-        target_compile_options(${tgt} INTERFACE
+        target_compile_options(${tgt} PRIVATE
             -fsanitize=undefined
             -fno-omit-frame-pointer
         )
 
-        target_link_options(${tgt} INTERFACE
+        target_link_options(${tgt} PRIVATE
             -fsanitize=undefined
         )
     endif()

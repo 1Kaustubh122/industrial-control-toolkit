@@ -1,10 +1,10 @@
 function (ictk_apply_compiler_options tgt)
-  target_compile_definitions(${tgt} INTERFACE
+  target_compile_definitions(${tgt} PUBLIC
   $<$<BOOL:${ICTK_NO_EXCEPTIONS}>:ICTK_NO_EXCEPTIONS=1>
   $<$<BOOL:${ICTK_NO_RTTI}>:ICTK_NO_RTTI=1>)
 
   if (MSVC)
-    target_compile_options(${tgt} INTERFACE
+    target_compile_options(${tgt} PRIVATE
         /permissive-
         /W4 /WX
         /Zc:preprocessor /Zc:__cplusplus
@@ -13,17 +13,17 @@ function (ictk_apply_compiler_options tgt)
         /EHsc
     ) 
     # LTO in MSVC
-    target_compile_options(${tgt} INTERFACE
+    target_compile_options(${tgt} PRIVATE
       $<$AND:$<CONFIG:Release>,$<BOOL:${ICTK_ENABLE_LTO}>>:/GL>
     ) 
 
-    target_link_options(${tgt} INTERFACE
+    target_link_options(${tgt} PRIVATE
       $<$<AND:$<CONFIG:Release>,$<BOOL:${ICTK_ENABLE_LTO}>>:/LTCG>
     )
   
   else()
     # GCC/Clang
-    target_compile_options(${tgt} INTERFACE
+    target_compile_options(${tgt} PRIVATE
       -Wall -Wextra -Wpedantic -Werror
       -Wconversion -Wdouble-promotion -Wshadow -Wnon-virtual-dtor -Wold-style-cast
       -ffp-contract=off -fno-math-errno -fno-signed-zeros
@@ -32,7 +32,7 @@ function (ictk_apply_compiler_options tgt)
     )
 
     # LTO for release when requested
-    target_compile_options(${tgt} INTERFACE
+    target_compile_options(${tgt} PRIVATE
       $<$<AND:$<CONFIG:Release>,$<BOOL:${ICTK_ENABLE_LTO}>>:-flto>
     )
   
