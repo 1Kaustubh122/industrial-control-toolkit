@@ -36,6 +36,7 @@ add_library(ictk STATIC
   src/ictk_version.cc
 )
 
+add_library(ictk_core ALIAS ictk)
 add_library(ictk::ictk ALIAS ictk)
 
 target_include_directories(ictk 
