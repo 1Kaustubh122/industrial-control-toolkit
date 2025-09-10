@@ -174,3 +174,12 @@ cython_debug/
 ## Logs
 
 log
+
+## dep
+*.deb
+
+## c pack packages
+_CPack_Packages
+
+## repo
+ictk-apt
