@@ -1,0 +1,15 @@
+Origin: Kaustubh
+Label: ICTK
+Suite: stable
+Codename: jammy
+Architectures: amd64
+Components: main
+SignWith: DFB64901A2C46C572439EE598FEB50C7FF28F4C3
+
+Origin: Kaustubh
+Label: ICTK
+Suite: stable
+Codename: noble
+Architectures: amd64
+Components: main
+SignWith: DFB64901A2C46C572439EE598FEB50C7FF28F4C3

@@ -1,0 +1,19 @@
+Origin: Kaustubh
+Label: ICTK
+Suite: stable
+Codename: noble
+Date: Wed, 10 Sep 2025 08:18:07 UTC
+Architectures: amd64
+Components: main
+MD5Sum:
+ 3e43a0bbc1cfe251ed3b1dc936052127 441 main/binary-amd64/Packages
+ ab9aa0dd0ba15430b2868a086f5b6ca6 341 main/binary-amd64/Packages.gz
+ 6e5e9ae8ebc6e9a6ea0a23521b0a0763 81 main/binary-amd64/Release
+SHA1:
+ 8d2160592a05b6353bb82898a1d70ef507b8acb6 441 main/binary-amd64/Packages
+ ffd22c96cc77aea10ef39a945da1c6976141e112 341 main/binary-amd64/Packages.gz
+ bab7fcdb014af7c8ea887aadbc2ac405f42c1b98 81 main/binary-amd64/Release
+SHA256:
+ 66eab3e024ea7389c1b75c45642fe54d5d51ae21566ce8e78c9b426ea2c8c2d5 441 main/binary-amd64/Packages
+ 8e4ded296c8120acff29d17e1256258ef71eaafdc1ac5cd64685f531d518e8cb 341 main/binary-amd64/Packages.gz
+ 699dd6e2f4718f3ccb1399144611e8496a48d5d64224025fc747c2de519c0a81 81 main/binary-amd64/Release
