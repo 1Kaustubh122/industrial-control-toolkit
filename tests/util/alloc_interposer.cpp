@@ -11,13 +11,15 @@
 
 static inline void* ictk_fail_alloc() noexcept{
     #if defined(ICTK_NO_EXCEPTIONS)
+        // // hard fail -> real time sys can't recover
         std::abort();
-    # if defined(__GNUC__) || defined(__clang__)
-        __builtin_unreachable();
-    # endif
-        return nullptr; 
+        # if defined(__GNUC__) || defined(__clang__)
+            __builtin_unreachable();
+        # endif
+        return nullptr; // never reached
     #else
-        return ictk_fail_alloc();
+        // // if exceptions are allowed
+        throw std::bad_alloc();
     #endif
 }
 
@@ -99,26 +101,27 @@ void operator delete[](void* p, std::size_t) noexcept{
 void* operator new(std::size_t sz, std::align_val_t al){
     ictk_test::g_new_aligned.fetch_add(1, std::memory_order_relaxed);
     std::size_t align = static_cast<std::size_t>(al);
-#if defined(_WIN32)
-    void* p = _aligned_malloc(sz, align);
-    if (!p){
-        return ictk_fail_alloc();
-    }
-    return p;
-#else
-    void* p = nullptr;
-    if (posix_memalign(&p, align, sz) != 0 || !p) return ictk_fail_alloc();
-    return p;
-#endif
+    #if defined(_WIN32)
+        void* p = _aligned_malloc(sz, align);
+        if (!p){
+            return ictk_fail_alloc();
+        }
+        return p;
+    #else
+        void* p = nullptr;
+        if (align < alignof(void*) || (align & (align - 1)) != 0) align = alignof(void*);
+        if (posix_memalign(&p, align, sz) != 0 || !p) return ictk_fail_alloc();
+        return p;
+    #endif
 }
 
 void operator delete(void* p, std::align_val_t) noexcept{
     ictk_test::g_delete_aligned.fetch_add(1, std::memory_order_relaxed);
-#if defined(_WIN32)
-    _aligned_free(p);
-#else
-    std::free(p);
-#endif
+    #if defined(_WIN32)
+        _aligned_free(p);
+    #else
+        std::free(p);
+    #endif
 }
 
 void* operator new[](std::size_t sz, std::align_val_t al){
