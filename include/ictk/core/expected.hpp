@@ -1,31 +1,46 @@
 #pragma once
-#include <new>
-#include <utility>
-#include <type_traits>
+#include <new>         // for placement new and explicit destructor calls
+#include <utility>     // for move and forward
+#include <type_traits> // for noexcept() 
 
-#include "ictk/core/status.hpp"
+#include "ictk/core/status.hpp" // ret code tyoe 
 
 namespace ictk{
 
-    // // making Expected template to create many classes
     template <class T>
     class Expected{
         public:
-            
+            // // no discard: ignore unused warns, if return values are not used. 
+
+            /*
+            1. Expected => success state
+            2. Call private default constructor, makes ok_ = false and create a empty buffer
+            3. mark e.ok_ = true/false, that we are going to hold a T in the storage
+            4. placement new -> construct real T inside the raw buffer using copy/move constructor from v
+            5. return r  -> NRVO or move; no heap
+            */
+
+            // // Lvalue overload -> takes const t& -> calls with an existing obj -> no extra copy at call 
             [[nodiscard]] static Expected success(const T& v) noexcept(std::is_nothrow_copy_constructible_v<T>){
-                Expected e;
+                Expected e;   
                 e.ok_ = true;
                 ::new (e.storage_) T(v);
                 return e;
             }
-                
+            
+            // // Rvalue overload 
             [[nodiscard]] static Expected success(T&& v) noexcept(std::is_nothrow_move_constructible_v<T>){
                 Expected e;
                 e.ok_ = true;
-                ::new (e.storage_) T(std::move(v));
+                ::new (e.storage_) T(std::move(v)); // casts v to rvalue on T's move ctor is selected (no heap)
                 return e;
             }
-             
+            
+            /*
+            Direct construction: built T inplace from constructor args
+            Args... = list of arguments
+            forwarding -> to preserve value category, l/rvalues stay the same
+            */
             template <class ... Args>
             [[nodiscard]] static Expected emplace(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>){
                 Expected e;
@@ -33,42 +48,49 @@ namespace ictk{
                 ::new (e.storage_) T(std::forward<Args>(args)...);
                 return e;
             }
-             
+            
+            // // Failure
             [[nodiscard]] static Expected failure(Status s) noexcept{
                 Expected e;
                 e.ok_ = false;
                 e.err_ = s;
                 return e;
             }
-
+            // // Copy constructor -> build new Expected <T> from existing o                // member init
             Expected(const Expected& o) noexcept(std::is_nothrow_copy_constructible_v<T>) : err_(o.err_), ok_(o.ok_){
                 if (ok_) ::new (storage_) T(*o.ptr());
             }
 
-            Expected(Expected&& o) noexcept(std::is_nothrow_move_constructible_v) : err_(o.err_), ok_(o.ok_){
+            // // Move constructor -> build a new obs by moving from o
+            Expected(Expected&& o) noexcept(std::is_nothrow_move_constructible_v<T>) : err_(o.err_), ok_(o.ok_){
                 if (ok_) ::new (storage_) T(std::move(*o.ptr()));
                 o.reset_();
             }
             
+            // // Copy assignment
             Expected& operator=(const Expected& o) noexcept(std::is_nothrow_copy_constructible_v<T>){
-                if (this==&o) return *this;
-                if (ok_) ptr() -> ~T();
+                // // self assign guard
+                if (this==&o) return *this; 
+                if (ok_) ptr() -> ~T();     // destroy old T if had one
                 err_ = o.err_;
                 ok_ = o.ok_;
-                if(ok_) ::new (storage_) T(*o.ptr());
-                return *this;
-            }
-                
-            Expected& operator=(Expected&& o) noexcept(std::is_nothrow_move_constructible_v<T>){
-                if(this==&o) return *this;
-                if (ok_) ptr() -> ~T();
-                err_ = o.err_;
-                ok_ = o.ok_;
-                if (ok_) ::new (storage_) T(std::move(*o.ptr()));
-                o.reset_();
+                if(ok_) ::new (storage_) T(*o.ptr());   // // copy const from o
                 return *this;
             }
             
+            // // Move assignment
+            Expected& operator=(Expected&& o) noexcept(std::is_nothrow_move_constructible_v<T>){
+                // self move guard
+                if(this==&o) return *this;
+                if (ok_) ptr() -> ~T();     // destroy old T if had one
+                err_ = o.err_;
+                ok_ = o.ok_;
+                if (ok_) ::new (storage_) T(std::move(*o.ptr()));   // move construct from o
+                o.reset_(); // leave empty o
+                return *this;
+            }
+            
+            // // Destructor
             ~Expected() noexcept{
                 reset_();
             }
@@ -97,10 +119,10 @@ namespace ictk{
 
             // // move out helper for zero copy handoff
             [[nodiscard]] T take() noexcept(std::is_nothrow_move_constructible_v<T>){
-                T tmp = std::move(*ptr());
-                ptr()->~T();
-                ok_ = false;
-                return tmp;
+                T tmp = std::move(*ptr());  // move from in place T
+                ptr()->~T();    // destroy in place
+                ok_ = false;    // now empty
+                return tmp;     // ret by value
             }
             
         private:
