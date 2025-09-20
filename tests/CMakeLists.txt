@@ -117,3 +117,24 @@ add_executable(test_pid_jerk_lipschitz tests_pid/property/pid_jerk_lipschitz_pro
 target_link_libraries(test_pid_jerk_lipschitz PRIVATE ictk_core)
 ictk_apply_compiler_options(test_pid_jerk_lipschitz)
 add_test(NAME pid_jerk_lipschitz_property COMMAND test_pid_jerk_lipschitz)
+
+## filters and models
+add_executable(test_iir_determinism_property property/test_iir_determinism_property.cpp)
+target_link_libraries(test_iir_determinism_property PRIVATE ictk_core ictk_test_util)
+ictk_apply_compiler_options(test_iir_determinism_property)
+add_test(NAME test_iir_determinism_property COMMAND test_iir_determinism_property)
+
+add_executable(test_fifo_delay property/test_fifo_delay_property.cpp)
+target_link_libraries(test_fifo_delay PRIVATE ictk_core ictk_test_util)
+ictk_apply_compiler_options(test_fifo_delay)
+add_test(NAME test_fifo_delay_property COMMAND test_fifo_delay)
+
+add_executable(test_deadtime_peek_bounds unit/test_deadtime_peek_bounds.cpp)
+target_link_libraries(test_deadtime_peek_bounds PRIVATE ictk_core ictk_test_util)
+ictk_apply_compiler_options(test_deadtime_peek_bounds)
+add_test(NAME test_deadtime_peek_bounds COMMAND test_deadtime_peek_bounds)
+
+add_executable(test_affine_scale unit/test_affine_scale.cpp)
+target_link_libraries(test_affine_scale PRIVATE ictk_core ictk_test_util)
+ictk_apply_compiler_options(test_affine_scale)
+add_test(NAME test_affine_scale COMMAND test_affine_scale)
