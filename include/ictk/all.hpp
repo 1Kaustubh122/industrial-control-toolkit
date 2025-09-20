@@ -12,3 +12,6 @@
 #include "ictk/core/controller.hpp"
 #include "ictk/io/kpi.hpp"
 #include "ictk/io/logger.hpp"
+#include "ictk/filters/iir.hpp"
+#include "ictk/models/dead_time.hpp"
+#include "ictk/models/scaling.hpp"
