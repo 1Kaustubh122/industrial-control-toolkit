@@ -42,7 +42,7 @@ class SpyController final: public ControllerBase{
             tr_.seq.push_back('J');
             return 0;
         }
-        void anti_windup_update(const UpdateContext&, std::span<const Scalar>) noexcept{
+        void anti_windup_update(const UpdateContext&, std::span<const Scalar>, std::span<const Scalar>) noexcept override{
             tr_.seq.push_back('A');
         }
 
