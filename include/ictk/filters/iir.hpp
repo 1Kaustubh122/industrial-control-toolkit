@@ -13,7 +13,7 @@
 #include "ictk/core/memory_arena.hpp"
 #include "ictk/core/expected.hpp"
 
-namespace ictk::filter{
+namespace ictk::filters{
     // // Normalised a0=1 biquad (Direct form II Transposed)
     struct Biquad{
         // num coeff
