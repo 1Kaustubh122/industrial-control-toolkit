@@ -1,0 +1,51 @@
+namespace ictk.metrics;
+
+table BuildInfo{
+    ictk_version:string;
+    git_sha:string;
+    compiler:string;
+    flags:string;
+    scalar_type:string;
+    dt_ns:ulong;
+    controller_id:string;
+    asset_id:string;
+}
+
+table Tick{
+    seq:ulong;
+    t_ns:ulong;
+    y0:double;
+    r0:double;
+    u_pre0:double;
+    u_post0:double;
+}
+
+enum Mode:ubyte { Primary=0, Residual=1, Shadow=2, Cooperative=3 }
+
+table Health{
+    deadline_miss_count:ulong;
+    saturation_pct:double;
+    rate_hits:ulong;
+    jerk_hits:ulong;
+    fallback_active:bool;
+    novelty_flag:bool;
+    aw_term_mag:double;
+    last_clamp_mag:double;
+    last_rate_clip_mag:double;
+    last_jerk_clip_mag:double;
+    mode:Mode = Primary;
+}
+
+table Kpi{
+    updates:ulong;
+    watchdog_trips:ulong;
+    fallback_entries:ulong;
+    limit_hits:ulong;
+    iae:double;
+    itae:double;
+    tvu:double;
+    p50_lat_us:double;
+    p95_lat_us:double;
+    p99_lat_us:double;
+    health_gap_frames:ulong;
+}
