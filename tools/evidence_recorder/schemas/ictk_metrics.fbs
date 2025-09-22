@@ -9,6 +9,7 @@ table BuildInfo{
     dt_ns:ulong;
     controller_id:string;
     asset_id:string;
+    tick_decimation:uint;
 }
 
 table Tick{
@@ -48,4 +49,9 @@ table Kpi{
     p95_lat_us:double;
     p99_lat_us:double;
     health_gap_frames:ulong;
+}
+
+table TimeAnchor{
+  epoch_mono_ns:ulong;
+  epoch_utc_ns:ulong;
 }
