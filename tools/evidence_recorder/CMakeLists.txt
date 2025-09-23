@@ -50,8 +50,9 @@ add_executable(ictk_record
     ${CMAKE_CURRENT_LIST_DIR}/cli/ictk_record_main.cpp
 )
 
-# # Not re=expose lib's usage req 
-target_link_libraries(ictk_record PRIVATE ictk_recorder)
+# # Not re-expose lib's usage req 
+target_link_libraries(ictk_recorder PRIVATE ictk) 
+target_link_libraries(ictk_record   PRIVATE ictk_recorder ictk)
 
 # # for CTest
 enable_testing()
@@ -60,14 +61,14 @@ add_executable(recorder_roundtrip_test
     ${CMAKE_CURRENT_LIST_DIR}/tests/roundtrip_test.cpp
 )
 
-target_link_libraries(recorder_roundtrip_test PRIVATE ictk_recorder)
+target_link_libraries(recorder_roundtrip_test PRIVATE ictk_recorder ictk)
 add_test(NAME recorder_roundtrip_test COMMAND recorder_roundtrip_test)
 
 add_executable(recorder_timebase_test
 ${CMAKE_CURRENT_LIST_DIR}/tests/timebase_test.cpp
 )
 
-target_link_libraries(recorder_timebase_test PRIVATE ictk_recorder)
+target_link_libraries(recorder_timebase_test  PRIVATE ictk_recorder ictk)
 add_test(NAME recorder_timebase_test COMMAND recorder_timebase_test)
 
 

@@ -64,6 +64,8 @@ if (ICTK_BUILD_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
 
+add_subdirectory(tools/evidence_recorder)
+
 ## TESTING
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
