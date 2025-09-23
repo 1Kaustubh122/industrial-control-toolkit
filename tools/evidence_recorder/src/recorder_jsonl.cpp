@@ -159,10 +159,10 @@ namespace ictk::tools{
             void write_time_anchor(std::int64_t epoch_mono_ns, std::int64_t epoch_utc_ns) override{
                 ensure_open_();
                 mono_anchor_ns_ = epoch_mono_ns;
-                utc_anchor_ns_ = epoch_utc_ns;
+                utc_anchor_ns_  = epoch_utc_ns;
                 std::string line;
-                line.reserve(160);
-                line += R"({"ch":"/ictk/time_anchor","body":{"epoch_mono_ns":)";
+                line.reserve(192);
+                line += R"({"ch":"/ictk/time_anchor","body":{"clock_domain":"MONO","epoch_mono_ns":)";
                 line += std::to_string(static_cast<unsigned long long>(epoch_mono_ns));
                 line += R"(,"epoch_utc_ns":)";
                 line += std::to_string(static_cast<unsigned long long>(epoch_utc_ns));
