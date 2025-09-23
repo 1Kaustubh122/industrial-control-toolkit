@@ -28,8 +28,10 @@ static void usage(){
 
 // system clock -> epoch ns
 static inline long long now_utc_ns(){
-    using namespace std::chrono;
-    return duration_cast<nanoseconds>(system_clock::now().time_since_epoch()).count();
+    timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return static_cast<long long>(ts.tv_sec) * 1000000000ll
+         + static_cast<long long>(ts.tv_nsec);
 }
 
 // monotonic source for TimeAnchor
@@ -39,14 +41,16 @@ static inline long long now_utc_ns(){
         LARGE_INTEGER f, c;
         QueryPerformanceFrequency(&f);
         QueryPerformanceCounter(&c);
-        return (long long)((1e9 * (long double)c.QuadPart) / (long double)f.QuadPart);
+        return static_cast<long long>( (1e9L * static_cast<long double>(c.QuadPart)) /
+                                    static_cast<long double>(f.QuadPart) );
     }
 #else
     #include <time.h>
     static inline long long now_mono_ns(){
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
-        return (long long) ts.tv_sec*1000000000ll + (long long)ts.tv_nsec;
+        return static_cast<long long>(ts.tv_sec) * 1000000000ll
+            + static_cast<long long>(ts.tv_nsec);
     }
 #endif
 
@@ -94,8 +98,14 @@ int main(int argc, char** argv){
     RecorderOptions opt;
     opt.out_dir = out_dir;
     opt.schema_dir = schema_dir;
-    opt.segment_max_mb = (segment_mb>0) ? (std::size_t)segment_mb : 256;
-    opt.fsync_n_mb = (fsync_n_mb > 0) ? (std::size_t)fsync_n_mb : 16;
+    opt.segment_max_mb = (segment_mb > 0)
+        ? static_cast<std::size_t>(segment_mb)
+        : static_cast<std::size_t>(256);
+
+    opt.fsync_n_mb = (fsync_n_mb > 0)
+        ? static_cast<std::size_t>(fsync_n_mb)
+        : static_cast<std::size_t>(16);
+
     opt.tick_decimation = (tick_decim > 0) ? tick_decim : 1;
     opt.fsync_policy = (
         std::strcmp(fsync_policy, "every_segment") == 0 ?
