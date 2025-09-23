@@ -10,16 +10,17 @@
 namespace fs = std::filesystem;
 using namespace ictk::tools;
 
-static std::string readall(const fs::path& p){
-    const auto sz = static_cast<std::size_t>(fs::file_size(p));
+static std::string readall(const fs::path& p) {
     std::FILE* f = std::fopen(p.string().c_str(), "rb");
     assert(f);
+    const auto sz = static_cast<std::size_t>(fs::file_size(p));
     std::string s(sz, '\0');
-    std::fread(s.data(), 1, sz, f);
+    const std::size_t n = std::fread(s.data(), 1, sz, f);
+    if (n != sz) s.resize(n); 
     std::fclose(f);
+    assert(n == sz);
     return s;
 }
-
 
 int main(){
     const char* out_dir = "evidence_test";
