@@ -52,17 +52,17 @@ namespace ictk::tools::detail{
 
         std::sort(buf, buf + n);
 
-        auto q = [&](double q)->double{
-            const double pos = q * (n-1);
+        auto quant = [&](double p)->double{
+            const double pos = p * static_cast<double>(n - 1);
             const std::size_t lo = static_cast<std::size_t>(pos);
-            const std::size_t hi = std::min(lo + 1, n-1);
-            const double frac = pos - lo;
+            const std::size_t hi = std::min<std::size_t>(lo + 1, n - 1);
+            const double frac = pos - static_cast<double>(lo);
             return buf[lo] + (buf[hi] - buf[lo]) * frac;
         };
 
-        p50_lat_us = q(0.50);
-        p95_lat_us = q(0.95);
-        p99_lat_us = q(0.99);
+        p50_lat_us = quant(0.50);
+        p95_lat_us = quant(0.95);
+        p99_lat_us = quant(0.99);
     }
 
     void KpiAcc::reset() noexcept{
