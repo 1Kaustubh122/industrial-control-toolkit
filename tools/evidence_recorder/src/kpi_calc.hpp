@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <algorithm>
 
 namespace ictk::tools::detail{
     struct KpiAcc{
