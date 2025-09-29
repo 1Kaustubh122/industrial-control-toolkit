@@ -183,3 +183,8 @@ _CPack_Packages
 
 ## repo
 ictk-apt
+
+mcap/*
+mcap
+
+flatbuffer
