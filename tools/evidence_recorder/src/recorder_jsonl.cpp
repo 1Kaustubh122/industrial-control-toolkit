@@ -432,14 +432,10 @@ namespace ictk::tools{
     // // Factory
     std::unique_ptr<Recorder> Recorder::open(const RecorderOptions& opt){
         #if defined(ICTK_RECORDER_BACKEND_MCAP)
-            // TO DO: 
-            /*
-            return MCAP backend
-            retrun std::unqptr Recorder (new RecorderMcap(opt))
-            */
+            return std::unique_ptr<Recorder>(new RecorderMcap(opt));
+        #else
+            return std::unique_ptr<Recorder>(new RecorderJsonl(opt));
         #endif
-        
-        return std::unique_ptr<Recorder>(new RecorderJsonl(opt));
     }
 
 } // namespace ictk::tools
