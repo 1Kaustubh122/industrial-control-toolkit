@@ -23,6 +23,49 @@ target_compile_features(ictk_recorder PRIVATE cxx_std_20)
 # # Emits PIC (-fPIC) for this lib (for linux)
 set_target_properties(ictk_recorder PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+if(ICTK_RECORDER_BACKEND_MCAP)
+    include(FetchContent)
+
+    # Fetch MCAP headers
+    FetchContent_Declare(
+        mcap
+        GIT_REPOSITORY https://github.com/foxglove/mcap.git
+        GIT_TAG        main
+        SOURCE_SUBDIR  cpp/mcap
+    )
+    FetchContent_MakeAvailable(mcap)
+
+    find_program(FLATC flatc REQUIRED)
+    set(SCHEMA  ${CMAKE_CURRENT_LIST_DIR}/schemas/ictk_metrics.fbs)
+    set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+    add_custom_command(
+        OUTPUT ${GEN_DIR}/ictk_metrics_generated.h ${GEN_DIR}/ictk_metrics.bfbs
+        COMMAND ${FLATC} --cpp --bfbs --bfbs-comments --scoped-enums -o ${GEN_DIR} ${SCHEMA}
+        DEPENDS ${SCHEMA}
+        VERBATIM
+    )
+
+    # Add MCAP sources
+    target_sources(ictk_recorder PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/src/recorder_mcap.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/hash.cpp
+        ${GEN_DIR}/ictk_metrics_generated.h
+    )
+
+    target_link_libraries(ictk_recorder PRIVATE mcap)
+
+    target_compile_definitions(ictk_recorder PUBLIC
+        ICTK_RECORDER_BACKEND_MCAP=1
+        ICTK_FB_SCHEMA_DIR=\"${GEN_DIR}\"
+    )
+
+else()
+    target_compile_definitions(ictk_recorder PUBLIC
+        ICTK_RECORDER_BACKEND_MCAP=0
+        ICTK_FB_SCHEMA_DIR=\"${CMAKE_CURRENT_LIST_DIR}/schemas\"
+    )
+endif()
+
 
 target_include_directories(ictk_recorder
     PUBLIC
@@ -74,8 +117,8 @@ add_test(NAME recorder_timebase_test COMMAND recorder_timebase_test)
 
 # # Compiler options
 if(COMMAND ictk_apply_compiler_options)
-  ictk_apply_compiler_options(ictk_recorder)
-  ictk_apply_compiler_options(ictk_record)
-  ictk_apply_compiler_options(recorder_roundtrip_test)
-  ictk_apply_compiler_options(recorder_timebase_test)
+    ictk_apply_compiler_options(ictk_recorder)
+    ictk_apply_compiler_options(ictk_record)
+    ictk_apply_compiler_options(recorder_roundtrip_test)
+    ictk_apply_compiler_options(recorder_timebase_test)
 endif()
