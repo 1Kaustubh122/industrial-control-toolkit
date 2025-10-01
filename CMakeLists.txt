@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(industrial-control-toolkit VERSION 0.0.2 LANGUAGES CXX)
+project(industrial-control-toolkit VERSION 0.1.0 LANGUAGES CXX)
 
 # Build Options
 ## Exception handling (Throw)
