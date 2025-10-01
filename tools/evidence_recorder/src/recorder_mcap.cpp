@@ -18,7 +18,17 @@
 
 // // value check gate -> compile mcap + flatbuffer
 #if ICTK_RECORDER_BACKEND_MCAP
+    #if defined(__GNUC__)
+        #  pragma GCC diagnostic push
+        #  pragma GCC diagnostic ignored "-Wshadow"
+    #endif
+
     #include <mcap/writer.hpp>
+
+    #if defined(__GNUC__)
+        #  pragma GCC diagnostic pop
+    #endif
+
     #include <flatbuffers/flatbuffers.h>
 
     // hashing 
@@ -57,7 +67,7 @@ namespace ictk::tools{
         static inline std::string utc_ns_string(){
             auto now = system_clock::now();
             auto ns = duration_cast<nanoseconds>(now.time_since_epoch()).count();
-            return std::to_string((long long)ns);
+            return std::to_string(static_cast<long long> (ns));
         } // std::string utc_ns_string
 
         /*
@@ -102,7 +112,7 @@ namespace ictk::tools{
 
                 }
 
-                return "unknown"
+                return "unknown";
             
             // for windows -> QPC -> query Performance Counter
             #elif defined(_WIN32)
@@ -203,10 +213,10 @@ namespace ictk::tools{
 
                     // init
                     auto bi = detail::make_buildinfo(
-                        (std::uint64_t)(cfg_.dt_ns_hint > 0 ? cfg_.dt_ns_hint : 0),
+                        static_cast<uint64_t>(cfg_.dt_ns_hint > 0 ? cfg_.dt_ns_hint : 0),
                         cfg_.controller_id.c_str(),
                         cfg_.asset_id.c_str(),
-                        (std::uint32_t) cfg_.tick_decimation
+                        static_cast<uint32_t> (cfg_.tick_decimation)
                     );
 
                     // Reuse flat buffer
@@ -220,10 +230,10 @@ namespace ictk::tools{
                         builder_.CreateString(bi.compiler),
                         builder_.CreateString(bi.flags),
                         builder_.CreateString(bi.scalar_type),
-                        (uint64_t)bi.dt_ns,
+                        static_cast<uint64_t> (bi.dt_ns),
                         builder_.CreateString(bi.controller_id),
                         builder_.CreateString(bi.asset_id),
-                        (uint32_t)bi.tick_decimation
+                        static_cast<uint32_t> (bi.tick_decimation)
                     );
 
                     // finalise the buffer
@@ -236,75 +246,59 @@ namespace ictk::tools{
                     msg.channelId = ch_build_;
 
                     // monotonic per file
-                    msg.sequence = seq_++;
+                    msg.sequence = static_cast<uint32_t>(seq_++);
 
                     // Timestamps the Bildinfo message -> uses monotonic anchor if set, else zero
-                    const uint64_t t = mono_anchor_ns_ ? (uint64_t) mono_anchor_ns_ : 0ull;
+                    const uint64_t t = static_cast<uint64_t>(mono_anchor_ns_ ?  mono_anchor_ns_ : 0ull);
                     msg.logTime = t;
                     msg.publishTime = t;
 
                     // transfer ownership of FlatBuffer bytes out of the builder without copying 
                     auto buf = builder_.Release();
+                    msg.data     = reinterpret_cast<const std::byte*>(buf.data());
+                    msg.dataSize = buf.size();
+                    (void)writer_.write(msg);  // Status is [[nodiscard]]
 
-                    // copy FlatBuffer into MCAP message payload -> MCAP msg owns its buffer
-                    msg.data.resize(buf.size());
-                    std::memcpy(msg.data.data(), buf.data(), buf.size());
-
-                    // write to file 
-                    writer_.write(msg);
                 } // void write_buildinfo
 
                 // // Bind Monotonic to UTC and stamp provenance
-                void write_time_anchor(std::int64_t epoch_mono_ns, std::int64_t epoch_utc_ns) override{
-                    // cache anchors for later timestamps and KPI time base (Internal state only)
-                    mono_anchor_ns_ = epoch_mono_ns;
-                    utc_anchor_ns_ = epoch_utc_ns;
+                void write_time_anchor(std::int64_t epoch_mono_ns, std::int64_t epoch_utc_ns) override{    
+                    mcap::KeyValueMap meta;
 
-                    // MCAP metadata
-                    std::vector<mcap::KeyValue> meta;
+                    meta["schema_backend"] = "flatbuffers";
+                    meta["clock_domain"]   = "MONO";
+                    meta["monotonic_to_utc_ns"] =
+                        std::string("{\"epoch_mono_ns\":") + std::to_string(epoch_mono_ns) +
+                        ",\"epoch_utc_ns\":" + std::to_string(epoch_utc_ns) + "}";
 
-                    // metadata
-                    meta.push_back({"schema_backend", "flatbuffers"});
-                    meta.push_back({"clock_domain", "MONO"});
-                    meta.push_back({
-                        "monotonic_to_utc_ns",
-                        std::string("{\"epoch_mono_ns\":")+std::to_string(epoch_mono_ns)+
-                        ",\"epoch_utc_ns\":"+std::to_string(epoch_utc_ns)+"}"
-                    });
-                    meta.push_back({"kernel_clocksource", kernel_clocksource()});
+                    meta["kernel_clocksource"] = kernel_clocksource();
 
-                    // Rebuilds BuildInfo to reuse normalized values
                     auto bi = detail::make_buildinfo(
-                        static_cast<std::uint64_t> (cfg_.dt_ns_hint > 0 ? cfg_.dt_ns_hint : 0),
-                        cfg_.controller_id.c_str(),
-                        cfg_.asset_id.c_str(),
-                        static_cast<std::uint32_t> (cfg_.tick_decimation)
-
+                        static_cast<std::uint64_t>(cfg_.dt_ns_hint > 0 ? cfg_.dt_ns_hint : 0),
+                        cfg_.controller_id.c_str(), cfg_.asset_id.c_str(),
+                        static_cast<std::uint32_t>(cfg_.tick_decimation)
                     );
 
-                    // Inject loop period and provenance triplet for quick reads without parsing a message
-                    meta.push_back({"dt_ns", std::to_string(bi.dt_ns)});
-                    meta.push_back({"ictk_version", bi.ictk_version});
-                    meta.push_back({"git_sha", bi.git_sha});
+                    meta["dt_ns"]        = std::to_string(bi.dt_ns);
+                    meta["ictk_version"] = bi.ictk_version;
+                    meta["git_sha"]      = bi.git_sha;
 
-                    // if BFBA file exists -> compute SHA-256 and embed one-time registry snapshot JSON array
                     const auto bfbs_path = (fs::path(cfg_.schema_dir)/"ictk_metrics.bfbs").string();
+                    
                     std::error_code fec;
+
                     if (fs::exists(bfbs_path, fec)){
                         const auto bfbs_sha = hash::sha256_file(bfbs_path.c_str());
                         const auto bfbs_hex = hash::to_hex({bfbs_sha.data(), bfbs_sha.size()});
-                        meta.push_back({
-                            "schema_registry_snapshot",
-                            std::string("[{\"name\":\"ictk_metrics.bfbs\",\"version\":\"1\",\"sha256\":\"")+bfbs_hex+"\"}]"
-                        });
+                        meta["schema_registry_snapshot"] =
+                            std::string("[{\"name\":\"ictk_metrics.bfbs\",\"version\":\"1\",\"sha256\":\"") + bfbs_hex + "\"}]";
                     }
 
-                    // build and writes an MCAP metadata
                     mcap::Metadata md;
-
                     md.name = "ictk";
                     md.metadata = std::move(meta);
-                    writer_.writeMetadata(md);
+                    (void)writer_.write(md);
+
                 } // void write_time_anchor
                 
                 // // emit Tick and Health, updates KPIs, rotate if needed
@@ -320,7 +314,7 @@ namespace ictk::tools{
                     else prev_t_ = s.t;
 
                     // cast 
-                    const uint64_t t =(uint64_t) prev_t_;
+                    const uint64_t t = static_cast<uint64_t>(prev_t_);
                     
                     // // Tick -> reuse FlatBufferBuilder buffer -> Zero alloc
                     builder_.Reset();
@@ -328,7 +322,7 @@ namespace ictk::tools{
                     // Serialize tick per schema
                     auto tk = ictk::metrics::CreateTick(
                         builder_,
-                        (uint64_t)(++tick_seq_),
+                        static_cast<uint64_t>(++tick_seq_),
                         t,
                         s.y0,
                         s.r0,
@@ -342,15 +336,15 @@ namespace ictk::tools{
                     mcap::Message msg;
 
                     msg.channelId = ch_tick_;
-                    msg.sequence = seq_++;
+                    msg.sequence = static_cast<uint32_t>(seq_++);
                     msg.logTime = t;
                     msg.publishTime = t;
 
                     // Payload copy into MCAP message and write out
                     auto buf = builder_.Release();
-                    msg.data.resize(buf.size());
-                    std::memcpy(msg.data.data(), buf.data(), buf.size());
-                    writer_.write(msg);
+                    msg.data     = reinterpret_cast<const std::byte*>(buf.data());
+                    msg.dataSize = buf.size();
+                    (void)writer_.write(msg);  // Status is [[nodiscard]]
 
                     // // Health
                     msg.channelId = ch_health_;
@@ -361,16 +355,16 @@ namespace ictk::tools{
                     // Serialize Health
                     auto hl = ictk::metrics::CreateHealth(
                         builder_,
-                        (uint64_t)s.h.deadline_miss_count,
-                        (double)s.h.saturation_pct,
-                        (uint64_t) s.h.rate_limit_hits,
-                        (uint64_t) s.h.jerk_limit_hits,
-                        (bool) s.h.fallback_active,
-                        (bool) s.h.novelty_flag,
-                        (double) s.h.aw_term_mag,
-                        (double) s.h.last_clamp_mag,
-                        (double) s.h.last_rate_clip_mag,
-                        (double) s.h.last_jerk_clip_mag,
+                        static_cast<uint64_t>   (s.h.deadline_miss_count),
+                        static_cast<double>     (s.h.saturation_pct),
+                        static_cast<uint64_t>   (s.h.rate_limit_hits),
+                        static_cast<uint64_t>   (s.h.jerk_limit_hits),
+                        static_cast<bool>       (s.h.fallback_active),
+                        static_cast<bool>       (s.h.novelty_flag),
+                        static_cast<double>     (s.h.aw_term_mag),
+                        static_cast<double>     (s.h.last_clamp_mag),
+                        static_cast<double>     (s.h.last_rate_clip_mag),
+                        static_cast<double>     (s.h.last_jerk_clip_mag),
                         fb_mode(cfg_.fixed_mode)
                     );
 
@@ -380,16 +374,16 @@ namespace ictk::tools{
                     // Timestamp Health same as tick
                     msg.logTime = t;
                     msg.publishTime = t;
-                    msg.sequence = seq_++;
+                    msg.sequence = static_cast<uint32_t>(seq_++);
 
                     // Write health payload
-                    buf = builder_.Release();
-                    msg.data.resize(buf.size());
-                    std::memcpy(msg.data.data(), buf.data(), buf.size());
-                    writer_.write(msg);
+                    auto buf2 = builder_.Release();
+                    msg.data = reinterpret_cast<const std::byte*>(buf2.data());
+                    msg.dataSize = buf2.size();
+                    (void)writer_.write(msg);  // Status is [[nodiscard]]
 
                     // compute absolute seconds since start of ITAE
-                    const double t_s = double(t - (uint64_t)first_t_) / 1e9;
+                    const double t_s = static_cast<double>(t - static_cast<uint64_t>(first_t_)) / 1e9;
 
                     // update KPI accum from r/y/u
                     acc_.on_tick(t_s, s.r0, s.y0, s.u_post0);
@@ -407,7 +401,7 @@ namespace ictk::tools{
                 // // Emit KPI summary
                 void write_kpi(const ictk::KpiCounters& k) override{
                     // pick timestamp -> prefer last tick (prev_t)
-                    const uint64_t t = prev_t_ >= 0 ? (uint64_t)prev_t_ : (uint64_t)mono_anchor_ns_;
+                    const uint64_t t = prev_t_ >= 0 ? static_cast<uint64_t>(prev_t_) : static_cast<uint64_t>(mono_anchor_ns_);
 
                     // reuse buffer 
                     builder_.Reset();
@@ -419,15 +413,15 @@ namespace ictk::tools{
                     auto kp = ictk::metrics::CreateKpi(
                         builder_,
 
-                        (uint64_t)k.updates,
-                        (uint64_t)k.watchdog_trips,
-                        (uint64_t)k.fallback_entries,
-                        (uint64_t)k.limit_hits,
+                        static_cast<uint64_t> (k.updates),
+                        static_cast<uint64_t> (k.watchdog_trips),
+                        static_cast<uint64_t> (k.fallback_entries),
+                        static_cast<uint64_t> (k.limit_hits),
 
                         acc_.iae, acc_.itae, acc_.tvu,
                         acc_.p50_lat_us, acc_.p95_lat_us, acc_.p99_lat_us,
 
-                        (uint64_t) acc_.health_gap_frames
+                        static_cast<uint64_t> (acc_.health_gap_frames)
                     );
 
                     // finish the buffer
@@ -436,15 +430,16 @@ namespace ictk::tools{
                     // for /ictk/kpi_report 
                     mcap::Message msg;
                     msg.channelId = ch_kpi_;
-                    msg.sequence = seq_++;
+                    msg.sequence = static_cast<uint32_t>(seq_++);
                     msg.logTime = t;
                     msg.publishTime = t;
 
                     // copy flat buffer into MCAP message 
                     auto buf = builder_.Release();
-                    msg.data.resize(buf.size());
-                    std::memcpy(msg.data.data(), buf.data(), buf.size());
-                    writer_.write(msg);
+                    msg.data     = reinterpret_cast<const std::byte*>(buf.data());
+                    msg.dataSize = buf.size();
+                    (void)writer_.write(msg);  // Status is [[nodiscard]]
+
                 } // void write_kpi
                 
                 // seg roll and periodic fsync
@@ -472,20 +467,10 @@ namespace ictk::tools{
                     }
                 } // void rotate_if_needed
 
-                // // Force flush
                 void flush() override{
-                    // Guard -> No file -> no Flush
-                    if (!fp_) return;
-
-                    // Push libc buffers to OS kernel
-                    std::fflush(fp_);
-
-                    // for different OS
-                    #if defined(_WIN32)
-                        _commit(_fileno(fp_));
-                    #else
-                        ::fsync(fileno(fp_));
-                    #endif
+                    /*
+                    no op with header only writer
+                    */
                 } // void flush
 
             private:
@@ -526,17 +511,17 @@ namespace ictk::tools{
                     mcap_path_ = make_filename_(cfg_.out_dir, ".mcap");
                     sidecar_path_ = mcap_path_;
                     sidecar_path_.replace_extension(".sidecar.json");
-                    fp_ = std::fopen(mcap_path_.c_str(), "wb+");
-                    if (!fp_){
-                        std::fprintf(stderr,"ictk_mcap: fopen failed: %s\n", mcap_path_.c_str());
-                        std::abort();
-                    }
 
                     // Configure writer
-                    mcap::McapWriterOptions wopt;
-                    wopt.compression = mcap::Compression::None;
-                    wopt.enableStatistics = false;
-                    writer_.open(fp_, wopt);
+                    mcap::McapWriterOptions wopt("");
+                    wopt.noStatistics = true; 
+
+                    auto st = writer_.open(mcap_path_.string(), wopt);
+
+                    if (!st.ok()){
+                        std::fprintf(stderr,"ictk_mcap: open failed: %s\n", st.message.c_str());
+                        std::abort();
+                    }
 
                     // reset rotation fsync 
                     last_fsync_mark_ = 0;
@@ -545,31 +530,19 @@ namespace ictk::tools{
                 }// void open_new_file_
 
                 void close_current_(){
-                    // close MCAP stream 
-                    if (!fp_) return;
+
+                    //  close file
                     writer_.close();
-                    #if defined(_WIN32)
-                        _commit(_fileno(fp_));
-                    #else 
-                        ::fsync(fileno(fp_));
-                    #endif
-
-                    // force kernel to write disk
-                    std::fclose(fp_);
-                    fp_ = nullptr;
-
+                
                     // compute payload BLAKE3-256 over the final MCAP file and SHA 256 over the schema bfbs
-                    const auto blake = hash::blake3_256_file(mcap_path_.c_str());
+                    const auto blake = hash::blake3_256_file(mcap_path_.string().c_str());
                     const auto blake_hex = hash::to_hex({blake.data(), blake.size()});
                     const auto bfbs_sha = hash::sha256_file((fs::path(cfg_.schema_dir)/"ictk_metrics.bfbs").string().c_str());
 
                     // produce hex string
                     const auto bfbs_hex = hash::to_hex({bfbs_sha.data(), bfbs_sha.size()});
 
-                    std::FILE* sc = std::fopen(sidecar_path_.c_str(), "wb");
-
-                    // write compact JSON sidecar with payload hash and schema hash list
-                    if(sc){
+                    if (std::FILE* sc = std::fopen(sidecar_path_.string().c_str(), "wb")){
                         std::string j;
                         j += R"({"payload_hash":{"alg":"BLAKE3-256","value":")" + blake_hex + R"("},)";
                         j += R"("bfbs_hashes":[{"name":"ictk_metrics.bfbs","alg":"SHA-256","value":")" + bfbs_hex + R"("}]})";
@@ -581,35 +554,46 @@ namespace ictk::tools{
                 void register_schemas_channels_(){
                     // load FlatBuffers binday schema bytes
                     const auto bfbs_path = (fs::path(cfg_.schema_dir)/"ictk_metrics.bfbs").string();
-                    const auto bfbs = read_file_bin(bfbs_path);
+                    const auto bfbsBytes = read_file_bin(bfbs_path);
+                    const std::string_view bfbs(reinterpret_cast<const char*>(bfbsBytes.data()), bfbsBytes.size());
 
                     // Register these four schema records with the writer -> return IDs
-                    auto sidBuild = writer_.addSchema({"ictk.metrics.BuildInfo", "flatbuffer", bfbs});
-                    auto sidTick = writer_.addSchema({"ictk.metrics.Tick", "flatbuffer", bfbs});
-                    auto sidHealth = writer_.addSchema({"ictk.metrics.Health", "flatbuffer", bfbs});
-                    auto sidKpi = writer_.addSchema({"ictk.metrics.Kpi", "flatbuffer", bfbs});
+                    mcap::Schema sBuild ("ictk.metrics.BuildInfo",  "flatbuffer", bfbs);
+                    mcap::Schema sTick  ("ictk.metrics.Tick",       "flatbuffer", bfbs);
+                    mcap::Schema sHealth("ictk.metrics.Health",     "flatbuffer", bfbs);
+                    mcap::Schema sKpi   ("ictk.metrics.Kpi",        "flatbuffer", bfbs);
+
+                    writer_.addSchema(sBuild);
+                    writer_.addSchema(sTick);
+                    writer_.addSchema(sHealth);
+                    writer_.addSchema(sKpi);
 
                     // template channel descriptor
                     mcap::Channel ch;
                     ch.messageEncoding = "flatbuffer";
 
                     // create these channels bounds to their schemas
-                    ch.schemaId = sidBuild;
                     ch.topic = "/ictk/buildinfo";
-                    ch_build_ = writer_.addChannel(ch);
+                    ch.schemaId = sBuild.id;
+                    writer_.addChannel(ch);
+                    ch_build_  = ch.id;
 
-                    ch.schemaId = sidTick;
                     ch.topic = "/ictk/tick";
-                    ch_tick_ = writer_.addChannel(ch);
-                    
-                    ch.schemaId = sidHealth;
-                    ch.topic = "/ictk/health";
-                    ch_health_ = writer_.addChannel(ch);
+                    ch.schemaId = sTick.id;
+                    writer_.addChannel(ch);
+                    ch_tick_ = ch.id;
 
-                    ch.schemaId = sidKpi;
+                    ch.topic = "/ictk/health";
+                    ch.schemaId = sHealth.id;
+                    writer_.addChannel(ch);
+                    ch_health_ = ch.id;
+
                     ch.topic = "/ictk/kpi_report";
-                    ch_kpi_ = writer_.addChannel(ch);
-                }// void register_schemas_channels_
+                    ch.schemaId = sKpi.id;
+                    writer_.addChannel(ch);
+                    ch_kpi_ = ch.id;
+
+                    }// void register_schemas_channels_
 
                 // // rotate_if_needed
                 void rotate_segment_(){
@@ -631,15 +615,12 @@ namespace ictk::tools{
             private:
                 // holds all configuration knobs
                 RecorderConfig cfg_{};
-                
-                // raw file handle for the open .mcap file
-                std::FILE* fp_{nullptr};
 
                 // store mcap file path
-                std::string mcap_path_{};
+                std::filesystem::path mcap_path_{};
 
                 // store json path .sidecar.json
-                std::string sidecar_path_{};
+                std::filesystem::path sidecar_path_{};
 
                 // tracks the file size at the last fsync 
                 std::size_t last_fsync_mark_{0};
@@ -661,7 +642,15 @@ namespace ictk::tools{
 
                 uint16_t ch_build_{0}, ch_tick_{0}, ch_health_{0}, ch_kpi_{0};
         };
-    
+                
     #endif
 
+    std::unique_ptr<Recorder> make_mcap_recorder(const RecorderOptions& opt) {
+        #if ICTK_RECORDER_BACKEND_MCAP
+            return std::unique_ptr<Recorder>(new RecorderMcap(opt));
+        #else
+            (void)opt;
+            return nullptr; // or throw if you prefer
+        #endif
+    }
 } // namespace ictk::tools
