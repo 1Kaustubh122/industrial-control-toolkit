@@ -43,6 +43,9 @@ tracks per segment seq
 
 namespace fs = std::filesystem;
 namespace ictk::tools{
+    #if ICTK_RECORDER_BACKEND_MCAP
+        std::unique_ptr<Recorder> make_mcap_recorder(const RecorderOptions& opt);
+    #endif
     // // Helper functions
 
     /*
@@ -431,8 +434,8 @@ namespace ictk::tools{
 
     // // Factory
     std::unique_ptr<Recorder> Recorder::open(const RecorderOptions& opt){
-        #if defined(ICTK_RECORDER_BACKEND_MCAP)
-            return std::unique_ptr<Recorder>(new RecorderMcap(opt));
+        #if ICTK_RECORDER_BACKEND_MCAP
+            return make_mcap_recorder(opt);
         #else
             return std::unique_ptr<Recorder>(new RecorderJsonl(opt));
         #endif
