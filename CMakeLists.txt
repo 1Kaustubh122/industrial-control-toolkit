@@ -64,6 +64,10 @@ if (ICTK_BUILD_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
 
+## Examples
+add_subdirectory(examples)
+
+## Evidence recorder for ACR
 add_subdirectory(tools/evidence_recorder)
 
 ## TESTING
