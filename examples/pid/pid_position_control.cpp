@@ -1,10 +1,12 @@
 #include <vector>
 #include <cstdio>
+#include <filesystem>
 
 #include "ictk/all.hpp"
 #include "ictk/control/pid/pid.hpp"
 #include "ictk/safety/anti_windup.hpp"
 
+namespace fs = std::filesystem;
 using namespace ictk;
 using ictk::safety::AWMode;
 using namespace ictk::control::pid;
@@ -15,6 +17,32 @@ static inline void ok_or_die(Status s, const char* msg){
         std::fflush(stderr);
         std::exit(1);
     }
+}
+
+static fs::path find_repo_root(){
+    fs::path p = fs::current_path();
+    for (int i=0; i<20 && !p.empty(); ++i){
+        if (fs::exists(p/".git") && fs::is_directory(p/"examples"))
+            return p;
+        p = p.parent_path();  // repo root "~/industrial-control-toolkit"
+    }
+    return {}; // not found
+}
+
+static std::FILE* open_log_in_examples_pid(const char* filename){
+    fs::path root = find_repo_root();
+    fs::path out  = root.empty() ? (fs::current_path()/filename) : (root/"examples"/"pid"/"csv"/filename);
+    if (!root.empty()) {
+        std::error_code ec;
+        fs::create_directories(out.parent_path(), ec); // ignore if exists
+    }
+    std::FILE* f = std::fopen(out.string().c_str(),"w");
+    if (!f){
+        std::perror("fopen");
+        std::fprintf(stderr,"path tried: %s\n", out.string().c_str());
+        std::exit(1);
+    }
+    return f;
 }
 
 /*
@@ -47,8 +75,8 @@ int main(){
     PIDConfig c{};
 
     // Controller configs:
-    static Scalar Kp[]{2.0}, Ki[]{1.0}, Kd[]{0.1}, beta[]{1.0}, gamma[]{0.0}, bias[]{0.0}, tf[]{0.01};
-    static Scalar umin[]{-1.0}, umax[]{1.0}, du[]{5.0};
+    static Scalar Kp[]{3.5}, Ki[]{25.0}, Kd[]{0.0}, beta[]{1.0}, gamma[]{0.0}, bias[]{0.0}, tf[]{0.0};
+    static Scalar umin[]{-1.0}, umax[]{1.0}, du[]{200.0};
 
     c.Kp={Kp,1}; 
     c.Ki={Ki,1}; 
@@ -67,7 +95,7 @@ int main(){
     c.du_max={du,1};
 
     c.aw_mode = AWMode::kBackCalc;
-    c.Kt=0.2;
+    c.Kt=0.05;
 
     ok_or_die(pid.configure(c), "pid.configure");
     ok_or_die(pid.start(), "pid.start");
@@ -91,7 +119,12 @@ int main(){
         .health={}
     };
 
-    for (int k=0; k<100; ++k){
+    // save to csv to plot graph
+    std::FILE* f = open_log_in_examples_pid("pid_position_step.csv");
+
+    std::fprintf(f,"k,t_ms,u,y,r\n");
+
+    for (int k=0; k<1000; ++k){
         ps.t += dt;
 
         UpdateContext ctx{
@@ -110,6 +143,15 @@ int main(){
             static_cast<double>(u[0]),
             static_cast<double>(y[0])
         );
+
+        std::fprintf(
+            f,"%d,%d,%.9f,%.9f,1.0\n", 
+            k, 
+            k, 
+            static_cast<double>(u[0]),
+            static_cast<double>(y[0])
+        );
+        if(k==99) std::fprintf(stderr,"wrote pid_position_step.csv\n");
     }
     return 0;
 }
