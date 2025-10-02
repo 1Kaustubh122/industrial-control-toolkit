@@ -1,7 +1,22 @@
-add_executable(example_pid_position examples/pid_position_control.cpp)
-target_link_libraries(example_pid_position PRIVATE ictk_core)
-ictk_apply_compiler_options(example_pid_position)
+## Build every examples -> *.cpp
 
-add_executable(example_pid_cascade examples/pid_cascade_speed_position.cpp)
-target_link_libraries(example_pid_cascade PRIVATE ictk_core)
-ictk_apply_compiler_options(example_pid_cascade)
+# build option
+option(ICTK_BUILD_EXAMPLES "Build ICTK examples" ON)
+set(ICTK_EXAMPLES "" CACHE STRING "Semicolon list of categories to build (empty=all)")
+
+if(NOT ICTK_BUILD_EXAMPLES)
+    return()
+endif()
+
+add_custom_target(examples_all)
+
+# add category subdirs that have a CMakeLists.txt
+file(GLOB children LIST_DIRECTORIES true "${CMAKE_CURRENT_SOURCE_DIR}/*")
+foreach(dir IN LISTS children)
+    if(IS_DIRECTORY "${dir}" AND EXISTS "${dir}/CMakeLists.txt")
+        get_filename_component(cat "${dir}" NAME)
+        if(ICTK_EXAMPLES STREQUAL "" OR ";${ICTK_EXAMPLES};" MATCHES ";${cat};")
+            add_subdirectory("${dir}")
+        endif()
+    endif()
+endforeach()
