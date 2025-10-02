@@ -1,4 +1,4 @@
-# Industrial Control Toolkit (ICTK)  
+# Industrial Control Toolkit (ICTK v0.1.0)  
 *Under active Development*
 
 **A portable, deterministic, production-grade control library for real-world automation.**
@@ -39,18 +39,56 @@ All with the same controller interface, safety contracts, and deterministic timi
 
 ## Getting started
 
+install ictk-dev
+
+```bash
+# Add repo key
+curl -fsSL https://1Kaustubh122.github.io/industrial-control-toolkit/KEY.gpg \
+| gpg --dearmor | sudo tee /usr/share/keyrings/ictk.gpg >/dev/null
+
+# Get code name (jammy or noble)
+CODENAME=$(lsb_release -sc)
+
+# add the source
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/ictk.gpg] https://1Kaustubh122.github.io/industrial-control-toolkit $CODENAME main" \
+| sudo tee /etc/apt/sources.list.d/ictk.list
+
+# Update
+sudo apt update
+
+# install v0.1.0
+sudo apt install -y ictk-dev
+````
+
 Build and run on any target with a C++20 compiler:
 
 ```bash
 mkdir build && cd build
+
+# Normal Build NO MCAP
 cmake .. -DCMAKE_BUILD_TYPE=Release
+```
+
+OR
+
+Build with MCAP -> will install flatbuffer v25.9.23, mcap cpp/v1.4.2, BLAKE3 1.8.2
+```bash
+cmake .. -DCMAKE_BUILD_TYPE=Release -DICTK_RECORDER_BACKEND_MCAP=ON
+```
+
+Compile in parallel
+```bash
 make -j
 ````
 
 Then try an example, e.g. PID position control:
 
 ```bash
-./examples/pid_position_control
+./examples/pid/example_pid_pid_position_control
+
+# OR
+
+./examples/pid/example_pid_pid_position_control 
 ```
 
 See [`docs/Architecture.md`](docs/Architecture.md) for the full module layout and API contracts.
