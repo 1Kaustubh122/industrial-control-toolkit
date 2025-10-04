@@ -262,7 +262,10 @@ namespace ictk::tools{
                 } // void write_buildinfo
 
                 // // Bind Monotonic to UTC and stamp provenance
-                void write_time_anchor(std::int64_t epoch_mono_ns, std::int64_t epoch_utc_ns) override{    
+                void write_time_anchor(std::int64_t epoch_mono_ns, std::int64_t epoch_utc_ns) override{
+                    mono_anchor_ns_ = epoch_mono_ns;
+                    utc_anchor_ns_  = epoch_utc_ns;
+
                     mcap::KeyValueMap meta;
 
                     meta["schema_backend"] = "flatbuffers";
@@ -486,7 +489,7 @@ namespace ictk::tools{
                     std::string controller_id;          // provenance
                     std::string asset_id;               // provenance
                     ictk::CommandMode fixed_mode{       // runtime flag 
-                        ictk::kPrimary
+                        ictk::CommandMode::Primary
                     };
                 }; //struct RecorderConfig
 
@@ -563,10 +566,10 @@ namespace ictk::tools{
                     mcap::Schema sHealth("ictk.metrics.Health",     "flatbuffer", bfbs);
                     mcap::Schema sKpi   ("ictk.metrics.Kpi",        "flatbuffer", bfbs);
 
-                    writer_.addSchema(sBuild);
-                    writer_.addSchema(sTick);
-                    writer_.addSchema(sHealth);
-                    writer_.addSchema(sKpi);
+                    const auto sidBuild  = writer_.addSchema(sBuild);
+                    const auto sidTick   = writer_.addSchema(sTick);
+                    const auto sidHealth = writer_.addSchema(sHealth);
+                    const auto sidKpi    = writer_.addSchema(sKpi);
 
                     // template channel descriptor
                     mcap::Channel ch;
@@ -574,22 +577,22 @@ namespace ictk::tools{
 
                     // create these channels bounds to their schemas
                     ch.topic = "/ictk/buildinfo";
-                    ch.schemaId = sBuild.id;
+                    ch.schemaId = sidBuild;
                     writer_.addChannel(ch);
                     ch_build_  = ch.id;
 
                     ch.topic = "/ictk/tick";
-                    ch.schemaId = sTick.id;
+                    ch.schemaId = sidTick;
                     writer_.addChannel(ch);
                     ch_tick_ = ch.id;
 
                     ch.topic = "/ictk/health";
-                    ch.schemaId = sHealth.id;
+                    ch.schemaId = sidHealth;
                     writer_.addChannel(ch);
                     ch_health_ = ch.id;
 
                     ch.topic = "/ictk/kpi_report";
-                    ch.schemaId = sKpi.id;
+                    ch.schemaId = sidKpi;
                     writer_.addChannel(ch);
                     ch_kpi_ = ch.id;
 
