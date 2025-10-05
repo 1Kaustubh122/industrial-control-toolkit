@@ -566,10 +566,10 @@ namespace ictk::tools{
                     mcap::Schema sHealth("ictk.metrics.Health",     "flatbuffer", bfbs);
                     mcap::Schema sKpi   ("ictk.metrics.Kpi",        "flatbuffer", bfbs);
 
-                    const auto sidBuild  = writer_.addSchema(sBuild);
-                    const auto sidTick   = writer_.addSchema(sTick);
-                    const auto sidHealth = writer_.addSchema(sHealth);
-                    const auto sidKpi    = writer_.addSchema(sKpi);
+                    writer_.addSchema(sBuild);
+                    writer_.addSchema(sTick);
+                    writer_.addSchema(sHealth);
+                    writer_.addSchema(sKpi);
 
                     // template channel descriptor
                     mcap::Channel ch;
@@ -577,22 +577,22 @@ namespace ictk::tools{
 
                     // create these channels bounds to their schemas
                     ch.topic = "/ictk/buildinfo";
-                    ch.schemaId = sidBuild;
+                    ch.schemaId = sBuild.id;
                     writer_.addChannel(ch);
                     ch_build_  = ch.id;
 
                     ch.topic = "/ictk/tick";
-                    ch.schemaId = sidTick;
+                    ch.schemaId = sTick.id;
                     writer_.addChannel(ch);
                     ch_tick_ = ch.id;
 
                     ch.topic = "/ictk/health";
-                    ch.schemaId = sidHealth;
+                    ch.schemaId = sHealth.id;
                     writer_.addChannel(ch);
                     ch_health_ = ch.id;
 
                     ch.topic = "/ictk/kpi_report";
-                    ch.schemaId = sidKpi;
+                    ch.schemaId = sKpi.id;
                     writer_.addChannel(ch);
                     ch_kpi_ = ch.id;
 
