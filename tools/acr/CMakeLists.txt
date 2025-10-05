@@ -26,19 +26,13 @@ target_compile_features(ictk_acr PUBLIC cxx_std_20)
 ictk_apply_compiler_options(ictk_acr)
 ictk_apply_sanitizers(ictk_acr)
 
-## Prefer system mcap + fallback
-find_package(mcap QUIET)
-if (mcap_FOUND)
-    target_link_libraries(ictk_acr PRIVATE mcap::mcap)
+# # MCAP: reuse the mcap target defined by tools/evidence_recorder
+if (TARGET mcap)  
+    target_link_libraries(ictk_acr PRIVATE mcap)
 else()
-    add_library(ictk_mcap_impl OBJECT
-        ${CMAKE_CURRENT_LIST_DIR}/../evidence_recorder/src/thirdparty/mcap_impl.cpp
-        )
-    target_include_directories(ictk_mcap_impl PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}/../evidence_recorder/src/thirdparty
-    )
-    target_link_libraries(ictk_acr PRIVATE ictk_mcap_impl)
+    message(FATAL_ERROR "TARGET mcap not found. Configure with -DICTK_RECORDER_BACKEND_MCAP=ON (and ICTK_FETCH_DEPS=ON or system headers).")
 endif()
+
 
 add_executable(acr cli/acr_main.cpp)
 target_link_libraries(acr PRIVATE ictk_acr)
