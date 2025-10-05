@@ -70,6 +70,10 @@ add_subdirectory(examples)
 ## Evidence recorder for ACR
 add_subdirectory(tools/evidence_recorder)
 
+## Autonomy Compliance Recorder (ACR)
+add_subdirectory(tools/acr)
+
+
 ## TESTING
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
