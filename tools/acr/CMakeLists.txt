@@ -1,5 +1,26 @@
 cmake_minimum_required(VERSION 3.20)
-project(ictk-acr LANGUAGES CXX)
+set(ACR_VERSION "0.1.0")
+project(ictk-acr VERSION ${ACR_VERSION} LANGUAGES CXX)
+
+set(GIT_SHA "unknown")
+find_program(GIT_EXECUTABLE git)
+
+if (GIT_EXECUTABLE)
+    execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short=12 HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_SHA OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET)
+    if(NOT GIT_SHA)
+        set(GIT_SHA "unknown")
+    endif()
+endif()
+
+set(ACR_VERSION_HDR ${CMAKE_CURRENT_BINARY_DIR}/generated/ictk/tools/acr/version.hpp)
+configure_file(
+    ${CMAKE_CURRENT_LIST_DIR}/include_template/version.hpp.in
+    ${ACR_VERSION_HDR}
+    @ONLY
+)
 
 add_library(ictk_acr STATIC 
     src/io/mcap_reader.cpp 
@@ -13,12 +34,16 @@ set_target_properties(ictk_acr PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(ictk_acr
     PUBLIC
-        ${CMAKE_CURRENT_LIST_DIR}/include
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>
+        $<INSTALL_INTERFACE:include>
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/src
         ${CMAKE_CURRENT_LIST_DIR}/../evidence_recorder/src
         ${CMAKE_CURRENT_LIST_DIR}/../evidence_recorder/schemas
 )
+
+install(FILES ${ACR_VERSION_HDR} DESTINATION include/ictk/tools/acr)
 
 target_compile_features(ictk_acr PUBLIC cxx_std_20)
 
