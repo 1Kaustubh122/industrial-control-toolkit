@@ -73,10 +73,10 @@ namespace ictk::tools::acr{
 
     /// @brief Reason for Anomalies
     enum class GapReason : std::uint8_t{
+        Unknown = 0,
         Duplicate = 1,
         Backward = 2,
-        Missing = 3,
-        Unknown = 9
+        Missing = 3
     }; // GapReason
 
     /// @brief Reason for Anomalies
