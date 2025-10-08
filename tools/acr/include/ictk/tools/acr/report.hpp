@@ -17,7 +17,7 @@ namespace ictk::tools::acr{
         std::uint64_t   size_bytes{0};
 
         // all records in that file
-        std::uint64_t   message_total{0};
+        std::uint64_t   messages_total{0};
 
         // per topic counts
         std::uint64_t   tick{0};
@@ -118,7 +118,7 @@ namespace ictk::tools::acr{
         std::string acr_version;
         std::string ictk_version;
         std::string git_sha;
-        std::string shcema_id;
+        std::string schema_id;
     };
     
     
@@ -139,10 +139,10 @@ namespace ictk::tools::acr{
         std::vector<Conflict> buildinfo_conflicts;
 
         struct RequiredPresent{
-            bool speed{false};
-            bool u_pre{false};
-            bool u_cmd{false};
-            bool set_point{false};
+            bool y0{false};
+            bool u_pre0{false};
+            bool u_post0{false};
+            bool r0{false};
         } required_fields_present;
 
         // list of absent items
